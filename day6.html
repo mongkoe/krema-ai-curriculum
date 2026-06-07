@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>6일차 · MCP·노코드 자동화 완전정복 | KREMA</title>
+  <style>
+    :root {
+      --bg: #0f172a; --bg-soft: #1e293b; --card: #1e293b; --card-2: #273449;
+      --text: #e2e8f0; --text-dim: #9aa7ba; --accent: #38bdf8; --accent-strong: #0ea5e9;
+      --highlight: #f59e0b; --green: #34d399; --pink: #f472b6; --purple: #a78bfa;
+      --teal: #2dd4bf; --rose: #fb7185; --border: #334155; --code-bg: #0b1222;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      font-family: "Pretendard", "Malgun Gothic", -apple-system, BlinkMacSystemFont, sans-serif;
+      background: radial-gradient(1200px 700px at 50% -15%, #3a1e2c 0%, var(--bg) 55%);
+      color: var(--text); line-height: 1.6; overflow: hidden;
+    }
+    .deck { height: 100vh; display: flex; flex-direction: column; }
+    .stage { flex: 1; position: relative; overflow: hidden; }
+    .slide { position: absolute; inset: 0; padding: 48px clamp(24px, 6vw, 90px) 32px; overflow-y: auto; display: none; flex-direction: column; gap: 14px; animation: fade 0.35s ease; }
+    .slide.active { display: flex; }
+    @keyframes fade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .slide-inner { max-width: 1020px; margin: 0 auto; width: 100%; }
+
+    /* ===== 폰트 전반 확대 (가독성 개선) ===== */
+    .kicker { display: inline-block; font-size: 13.5px; font-weight: 700; letter-spacing: 0.12em; color: var(--rose); border: 1px solid var(--rose); border-radius: 999px; padding: 5px 14px; margin-bottom: 15px; }
+    .kicker.amber { color: var(--highlight); border-color: var(--highlight); }
+    .kicker.green { color: var(--green); border-color: var(--green); }
+    .kicker.pink  { color: var(--pink);  border-color: var(--pink); }
+    .kicker.blue  { color: var(--accent); border-color: var(--accent); }
+    .kicker.purple{ color: var(--purple); border-color: var(--purple); }
+
+    h1.title { font-size: clamp(30px, 5vw, 46px); font-weight: 800; letter-spacing: -0.02em; line-height: 1.2; margin-bottom: 13px; }
+    h2.heading { font-size: clamp(23px, 3.4vw, 32px); font-weight: 800; letter-spacing: -0.02em; line-height: 1.25; margin-bottom: 5px; }
+    h2.heading .num { color: var(--rose); margin-right: 10px; font-variant-numeric: tabular-nums; }
+    .sub { color: var(--text-dim); font-size: clamp(15px, 1.7vw, 18px); margin-bottom: 7px; }
+
+    p { font-size: clamp(15px, 1.6vw, 17px); }
+    strong { color: #fff; }
+    .hl { color: var(--highlight); font-weight: 700; }
+    .ac { color: var(--accent); font-weight: 700; }
+    .gr { color: var(--green); font-weight: 700; }
+    .rs { color: var(--rose); font-weight: 700; }
+
+    ul.points { list-style: none; display: flex; flex-direction: column; gap: 9px; margin-top: 5px; }
+    ul.points > li { position: relative; padding-left: 27px; font-size: clamp(15px, 1.6vw, 17px); }
+    ul.points > li::before { content: ""; position: absolute; left: 5px; top: 10px; width: 9px; height: 9px; border-radius: 50%; background: var(--rose); }
+    ul.points ul { list-style: none; margin-top: 7px; padding-left: 4px; display: flex; flex-direction: column; gap: 6px; }
+    ul.points ul li { position: relative; padding-left: 19px; color: var(--text-dim); font-size: 15px; }
+    ul.points ul li::before { content: "–"; position: absolute; left: 2px; color: var(--text-dim); }
+
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; margin-top: 9px; }
+    .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 13px; margin-top: 9px; }
+    .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 11px; margin-top: 9px; }
+
+    .box { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 15px 17px; }
+    .box h3 { font-size: 15.5px; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+    .box .ico { font-size: 18px; }
+    .box p, .box li { font-size: 14.5px; color: var(--text-dim); }
+    .box ul { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+    .box ul li { position: relative; padding-left: 16px; }
+    .box ul li::before { content: "·"; position: absolute; left: 3px; color: var(--rose); font-weight: 700; }
+    .box.accent { border-color: var(--accent); }
+    .box.amber  { border-color: var(--highlight); background: rgba(245,158,11,0.06); }
+    .box.green  { border-color: var(--green); }
+    .box.pink   { border-color: var(--pink); }
+    .box.purple { border-color: var(--purple); }
+    .box.teal   { border-color: var(--teal); }
+    .box.rose   { border-color: var(--rose); background: rgba(251,113,133,0.05); }
+
+    .lead { background: linear-gradient(180deg, rgba(251,113,133,0.10), rgba(251,113,133,0.02)); border: 1px solid var(--rose); border-radius: 14px; padding: 13px 17px; font-size: clamp(15px, 1.6vw, 16.5px); margin: 5px 0; }
+    .lead b { color: var(--rose); }
+    .lead.blue { background: linear-gradient(180deg, rgba(56,189,248,0.10), rgba(56,189,248,0.02)); border-color: var(--accent); }
+    .lead.blue b { color: var(--accent); }
+    .lead.green { background: linear-gradient(180deg, rgba(52,211,153,0.10), rgba(52,211,153,0.02)); border-color: var(--green); }
+    .lead.green b { color: var(--green); }
+    .lead.amber { background: linear-gradient(180deg, rgba(245,158,11,0.10), rgba(245,158,11,0.02)); border-color: var(--highlight); }
+    .lead.amber b { color: var(--highlight); }
+
+    .steps { counter-reset: step; display: flex; flex-direction: column; gap: 9px; margin-top: 5px; }
+    .steps li { list-style: none; position: relative; padding-left: 39px; font-size: 15px; min-height: 27px; display: flex; align-items: center; }
+    .steps li::before { counter-increment: step; content: counter(step); position: absolute; left: 0; top: 0; width: 27px; height: 27px; border-radius: 50%; background: var(--rose); color: var(--bg); font-weight: 800; font-size: 13.5px; display: flex; align-items: center; justify-content: center; }
+    .steps.blue li::before { background: var(--accent); }
+    .steps.green li::before { background: var(--green); }
+    .steps.purple li::before { background: var(--purple); }
+    .steps.teal li::before { background: var(--teal); }
+
+    /* 프롬프트 (앰버) */
+    .prompt { background: var(--code-bg); border: 1px solid var(--border); border-left: 3px solid var(--highlight); border-radius: 10px; padding: 13px 15px; margin-top: 10px; font-family: "D2Coding", "Consolas", monospace; font-size: 14px; color: #cdd7e5; white-space: pre-wrap; line-height: 1.62; }
+    .prompt .label { display: block; font-family: "Pretendard", sans-serif; font-size: 12.5px; font-weight: 700; letter-spacing: 0.06em; color: var(--highlight); margin-bottom: 6px; }
+
+    /* 코드 (초록) */
+    .code { background: var(--code-bg); border: 1px solid var(--border); border-left: 3px solid var(--green); border-radius: 10px; padding: 13px 15px; margin-top: 10px; font-family: "D2Coding", "Consolas", monospace; font-size: 14px; color: #dbe3f0; white-space: pre; overflow-x: auto; line-height: 1.68; }
+    .code .label { display: block; font-family: "Pretendard", sans-serif; font-size: 12.5px; font-weight: 700; letter-spacing: 0.06em; color: var(--green); margin-bottom: 6px; }
+    .code .cmt { color: #6b7a90; }
+    .code .kw  { color: #38bdf8; }
+    .code .str { color: #fbbf24; }
+    .code .fn  { color: #f472b6; }
+    .code .num { color: #a78bfa; }
+
+    /* 이미지 프롬프트 (핑크) */
+    .imgprompt { background: var(--code-bg); border: 1px solid var(--border); border-left: 3px solid var(--pink); border-radius: 10px; padding: 13px 15px; margin-top: 10px; font-family: "D2Coding", "Consolas", monospace; font-size: 14px; color: #cdd7e5; white-space: pre-wrap; line-height: 1.64; }
+    .imgprompt .label { display: block; font-family: "Pretendard", sans-serif; font-size: 12.5px; font-weight: 700; letter-spacing: 0.06em; color: var(--pink); margin-bottom: 6px; }
+    .imgprompt .en { color: #93c5fd; }
+    .imgprompt .key { color: #f472b6; }
+
+    /* 워크플로 */
+    .flow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 11px; }
+    .flow .node { background: var(--card); border: 1px solid var(--border); border-radius: 9px; padding: 8px 14px; font-size: 14px; font-weight: 600; color: var(--text); }
+    .flow .node.on { border-color: var(--rose); color: var(--rose); }
+    .flow .arr { color: var(--text-dim); font-size: 16px; }
+
+    .tip { font-size: 14px; color: var(--text-dim); margin-top: 8px; }
+    .tip b { color: var(--green); }
+    .warn { color: var(--highlight); }
+
+    table.cmp { width: 100%; border-collapse: collapse; margin-top: 9px; font-size: 14.5px; }
+    table.cmp th, table.cmp td { border: 1px solid var(--border); padding: 9px 12px; text-align: left; vertical-align: top; }
+    table.cmp th { background: var(--card-2); color: #fff; font-weight: 700; }
+    table.cmp td { color: var(--text-dim); }
+    table.cmp tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
+    table.cmp code { font-family: "D2Coding", monospace; color: var(--rose); font-size: 13.5px; }
+    table.cmp td:first-child { color: #fff; font-weight: 600; }
+
+    .f { font-family: "D2Coding", "Consolas", monospace; font-size: 0.93em; color: var(--rose); background: rgba(251,113,133,0.08); border: 1px solid rgba(251,113,133,0.25); border-radius: 5px; padding: 1px 7px; }
+
+    .pill { display: inline-block; font-size: 13px; padding: 4px 12px; border-radius: 999px; border: 1px solid var(--border); color: var(--text-dim); margin: 2px 4px 2px 0; }
+    .pill.on { color: var(--bg); background: var(--rose); border-color: var(--rose); font-weight: 700; }
+
+    .divider { justify-content: center; align-items: flex-start; }
+    .divider .big-num { font-size: clamp(64px, 12vw, 134px); font-weight: 800; line-height: 1; color: transparent; -webkit-text-stroke: 2px var(--rose); margin-bottom: 6px; }
+    .divider .part-tag { display: inline-block; font-size: 13px; font-weight: 700; letter-spacing: 0.09em; border-radius: 999px; padding: 4px 13px; margin-bottom: 13px; color: var(--rose); border: 1px solid var(--rose); }
+    .divider .part-tag.p2 { color: var(--accent); border-color: var(--accent); }
+    .divider .part-tag.p3 { color: var(--green); border-color: var(--green); }
+    .divider .agenda { margin-top: 17px; display: flex; flex-wrap: wrap; gap: 8px; }
+
+    .toc { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 11px; margin-top: 11px; }
+    .toc li { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 13px 16px; display: flex; gap: 12px; align-items: flex-start; cursor: pointer; transition: border-color .15s ease, transform .15s ease, background .15s ease; }
+    .toc li:hover { border-color: var(--rose); transform: translateY(-2px); background: var(--card-2); }
+    .toc .n { font-size: 20px; font-weight: 800; color: var(--rose); min-width: 26px; }
+    .toc .t { font-size: 15.5px; font-weight: 700; }
+    .toc .d { font-size: 13px; color: var(--text-dim); margin-top: 2px; }
+    .toc .pl { font-size: 11.5px; color: var(--accent); font-weight: 700; letter-spacing: .04em; }
+
+    .topbar { display: flex; align-items: center; justify-content: space-between; padding: 12px clamp(18px, 5vw, 40px); border-bottom: 1px solid var(--border); background: rgba(15,23,42,0.7); backdrop-filter: blur(6px); flex-shrink: 0; }
+    .topbar .brand { font-size: 14.5px; font-weight: 700; color: var(--text); }
+    .topbar .brand span { color: var(--rose); }
+    .topbar .sec-label { font-size: 14px; color: var(--text-dim); }
+
+    .nav { display: flex; align-items: center; gap: 14px; padding: 10px clamp(18px, 5vw, 40px); border-top: 1px solid var(--border); background: rgba(15,23,42,0.7); backdrop-filter: blur(6px); flex-shrink: 0; }
+    .progress { flex: 1; height: 6px; background: var(--bg-soft); border-radius: 999px; overflow: hidden; }
+    .progress .bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent), var(--rose)); transition: width .3s ease; }
+    .counter { font-size: 14.5px; color: var(--text-dim); font-variant-numeric: tabular-nums; min-width: 66px; text-align: center; }
+    .navbtn { width: 40px; height: 40px; border-radius: 10px; border: 1px solid var(--border); background: var(--card); color: var(--text); font-size: 19px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .15s ease, border-color .15s ease, color .15s ease; }
+    .navbtn:hover { background: var(--rose); color: var(--bg); border-color: var(--rose); }
+    .navbtn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .navbtn:disabled:hover { background: var(--card); color: var(--text); border-color: var(--border); }
+    .home { font-size: 14px; color: var(--text-dim); text-decoration: none; }
+    .home:hover { color: var(--rose); }
+    .hint { position: fixed; bottom: 70px; left: 50%; transform: translateX(-50%); font-size: 13.5px; color: var(--text-dim); opacity: .7; pointer-events: none; }
+
+    @media (max-width: 720px) {
+      .grid2, .grid3, .grid4, .toc { grid-template-columns: 1fr; }
+      .slide { padding: 28px 15px 24px; }
+      .hint { display: none; }
+      .code, .prompt, .imgprompt { font-size: 12.8px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="deck">
+    <div class="topbar">
+      <div class="brand">KREMA · 생성형 AI 마케팅 기획 <span>6일차</span></div>
+      <div class="sec-label" id="secLabel">표지</div>
+    </div>
+
+    <div class="stage" id="stage">
+
+      <!-- ===== 표지 ===== -->
+      <section class="slide active" data-sec="표지">
+        <div class="slide-inner">
+          <span class="kicker">DAY 6 · 한국부동산마케팅협회</span>
+          <h1 class="title">MCP · 노코드 자동화 완전정복</h1>
+          <p class="sub">2026년 5월 27일(수) 10:00–17:00 · 건설회관(서울 강남)</p>
+          <div class="lead" style="margin-top:16px">
+            <b>오늘의 목표</b> — AI 채팅창에 외부 도구를 붙이는 <strong>MCP</strong>, 정해진 일을 대량으로 돌리는 <strong>노코드 자동화(Make.com)</strong>,
+            그리고 둘을 결합해 <strong>“대화 한 줄로 100명에게 개인화 메일”</strong>까지. 코드 없이 업무를 자동화합니다.
+          </div>
+          <div class="grid3" style="margin-top:16px">
+            <div class="box rose"><h3><span class="ico">🔌</span>PART 1 · MCP</h3><p>AI 채팅창에서 노션·캘린더·웹을 직접 부리기</p></div>
+            <div class="box accent"><h3><span class="ico">⚙️</span>PART 2 · 노코드</h3><p>Make.com 시나리오 · 공공데이터 API · 문서 자동화</p></div>
+            <div class="box green"><h3><span class="ico">🔗</span>PART 3 · 결합</h3><p>MCP × Make로 대량 개인화 메일 자동 발송</p></div>
+          </div>
+          <div class="tip" style="margin-top:14px"><b>준비물</b> — Claude 데스크탑, 구글 계정(캘린더·시트), Make.com 가입, 노션. 코딩 지식 불필요.</div>
+        </div>
+      </section>
+
+      <!-- ===== 목차 ===== -->
+      <section class="slide" data-sec="목차">
+        <div class="slide-inner">
+          <span class="kicker">CONTENTS</span>
+          <h2 class="heading">오늘 다루는 8개 섹션 (3 PART)</h2>
+          <p class="sub">제목을 누르면 해당 섹션으로 바로 이동합니다.</p>
+          <ul class="toc" id="toc"></ul>
+        </div>
+      </section>
+
+      <!-- ===== 섹션 01 divider ===== -->
+      <section class="slide divider" data-sec="1. MCP 개념">
+        <div class="slide-inner">
+          <span class="part-tag">PART 1 · MCP 활용</span>
+          <div class="big-num">01</div>
+          <h2 class="heading">MCP 개념 — AI에 외부 도구를 붙이는 통신 규칙</h2>
+          <p class="sub">채팅창 안에서 노션·드라이브·웹을 직접 부리는 ‘연결 규칙’ (1-1 ~ 1-8)</p>
+          <div class="agenda">
+            <span class="pill on">1-1 MCP란</span>
+            <span class="pill">1-2 이전 vs 이후</span>
+            <span class="pill">1-3 서버 종류 2가지</span>
+            <span class="pill">1-4 작동 구조 3단</span>
+            <span class="pill">1-5 주요 서버 5종</span>
+            <span class="pill">1-6 활용사례 4가지</span>
+            <span class="pill">1-7 커넥터 실습</span>
+            <span class="pill">1-8 장단점</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="1. MCP 개념">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">1-1</span>MCP(Model Context Protocol)란?</h2>
+        <div class="slide-inner">
+          <p class="sub">Anthropic이 만든, AI가 외부 도구에 ‘접속하는 규칙’</p>
+          <div class="lead blue"><b>한 줄 정의</b> — <strong>“HTTP가 웹사이트 접속 규칙이라면, MCP는 AI가 외부 도구(노션·구글드라이브·파일시스템)에 접속하는 규칙”</strong></div>
+          <div class="grid2">
+            <div class="box accent"><h3><span class="ico">🌐</span>HTTP</h3><p>브라우저 ↔ 웹사이트를 잇는 약속. 덕분에 어떤 사이트든 접속</p></div>
+            <div class="box rose"><h3><span class="ico">🔌</span>MCP</h3><p>AI ↔ 외부 도구를 잇는 약속. 덕분에 AI가 내 노션·드라이브를 직접 다룸</p></div>
+          </div>
+          <div class="tip"><b>왜 중요한가</b> — 표준 ‘규칙’이 생기면, 도구마다 따로 개발할 필요 없이 <b>한 번 연결로 AI가 그 도구를 부린다</b>. 비개발자에게도 ‘연결만 하면 되는’ 시대.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="1. MCP 개념">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">1-2</span>MCP 이전 vs 이후</h2>
+        <div class="slide-inner">
+          <p class="sub">‘복붙 노동’에서 ‘한 줄 명령’으로</p>
+          <table class="cmp">
+            <thead><tr><th>구분</th><th>MCP 이전</th><th>MCP 이후</th></tr></thead>
+            <tbody>
+              <tr><td>자료 가져오기</td><td>채팅마다 일일이 복붙</td><td>“노션에서 XX 찾아와서 써줘” 한 줄</td></tr>
+              <tr><td>작업 흐름</td><td>도구↔AI 오가며 수동</td><td>AI가 도구를 직접 호출</td></tr>
+              <tr><td>저장</td><td>결과를 다시 복사해 저장</td><td>“노션에 저장해줘”로 자동</td></tr>
+            </tbody>
+          </table>
+          <div class="lead"><b>체감 변화</b> — “이 자료 좀 가져와서, 정리해서, 저기 저장해줘”를 <strong>대화 한 번에</strong>. 복붙·창 전환이 사라진다.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="1. MCP 개념">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">1-3</span>MCP 서버 종류 2가지</h2>
+        <div class="slide-inner">
+          <p class="sub">‘로컬’과 ‘원격’ — 어디에 설치되어 있나</p>
+          <div class="grid2">
+            <div class="box rose"><h3><span class="ico">💻</span>로컬 방식 (앱 설치형)</h3><ul><li>내 PC에 설치해서 실행</li><li><strong>내 컴퓨터 파일 접근</strong>에 유리</li><li>파일시스템·로컬 데이터 작업</li></ul></div>
+            <div class="box accent"><h3><span class="ico">☁️</span>원격 방식 (웹 접속형)</h3><ul><li>서버 주소만 알면 연결</li><li>설치 없이 <strong>바로 사용</strong></li><li>노션·구글 등 클라우드 서비스</li></ul></div>
+          </div>
+          <div class="tip"><b>선택</b> — 내 PC 파일을 다뤄야 하면 ‘로컬’, 웹 서비스를 연결하면 ‘원격’. 오늘 실습은 주로 원격(노션·캘린더) + 일부 로컬(파일).</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="1. MCP 개념">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">1-4</span>작동 구조 3단</h2>
+        <div class="slide-inner">
+          <p class="sub">AI ↔ 중간 다리 ↔ 외부 서비스</p>
+          <div class="flow">
+            <span class="node on">AI 클라이언트<br/>(Claude·ChatGPT)</span><span class="arr">↔</span>
+            <span class="node on">MCP 서버<br/>(중간 다리)</span><span class="arr">↔</span>
+            <span class="node on">외부 서비스<br/>(노션·캘린더·네이버)</span>
+          </div>
+          <div class="grid3" style="margin-top:14px">
+            <div class="box accent"><h3><span class="ico">🤖</span>① 클라이언트</h3><p>내가 대화하는 AI. 요청을 이해하고 도구 호출을 결정</p></div>
+            <div class="box rose"><h3><span class="ico">🌉</span>② MCP 서버</h3><p>AI의 요청을 외부 서비스 언어로 ‘통역’하는 다리</p></div>
+            <div class="box green"><h3><span class="ico">🗄️</span>③ 외부 서비스</h3><p>실제 데이터가 있는 곳(노션·캘린더·네이버 등)</p></div>
+          </div>
+          <div class="tip"><b>핵심</b> — 우리가 만질 건 ‘다리(MCP 서버) 연결’뿐. 한 번 연결하면 AI가 알아서 ①↔③을 오간다.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="1. MCP 개념">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">1-5</span>주요 MCP 서버 5종</h2>
+        <div class="slide-inner">
+          <p class="sub">부동산 마케팅에 바로 쓰는 ‘연결 가능한 도구’들</p>
+          <div class="grid3">
+            <div class="box rose"><h3><span class="ico">📁</span>파일시스템</h3><p>내 PC 폴더·문서 읽고 쓰기</p></div>
+            <div class="box rose"><h3><span class="ico">📝</span>노션(Notion)</h3><p>자료·회의록·DB 관리</p></div>
+            <div class="box rose"><h3><span class="ico">💾</span>구글드라이브</h3><p>문서·시트·자료 검색</p></div>
+            <div class="box accent"><h3><span class="ico">🕷️</span>Firecrawl</h3><p>웹 크롤링·페이지 수집</p></div>
+            <div class="box accent"><h3><span class="ico">🔎</span>네이버 서치</h3><p>뉴스·블로그·검색 데이터</p></div>
+          </div>
+          <div class="tip"><b>조합의 힘</b> — 여러 서버를 동시에 연결하면(섹션 2) “네이버로 조사 → 노션에 저장”이 한 흐름으로. 도구가 늘수록 자동화 범위가 넓어진다.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="1. MCP 개념">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">1-6</span>실무 활용 사례 4가지</h2>
+        <div class="slide-inner">
+          <p class="sub">MCP가 부동산 마케터의 일상을 바꾸는 장면</p>
+          <div class="grid2">
+            <div class="box accent"><h3><span class="ico">📅</span>일정 관리 자동화</h3><p>“이번 주 일정 정리하고 미팅 메일 초안 써줘”</p></div>
+            <div class="box rose"><h3><span class="ico">📊</span>노션 자료 → 보고서</h3><p>“노션의 분양 데이터로 월간 보고서 작성”</p></div>
+            <div class="box green"><h3><span class="ico">🏢</span>경쟁사 분석 자동화</h3><p>“경쟁 단지 정보 조사해서 비교표로 정리”</p></div>
+            <div class="box purple"><h3><span class="ico">🕸️</span>Apify 웹 데이터 수집</h3><p>“이 사이트 매물 정보 긁어와서 표로”</p></div>
+          </div>
+          <div class="lead"><b>공통점</b> — 모두 ‘여러 도구를 오가는’ 일이다. MCP로 도구를 붙여두면 <strong>대화 한 번이 곧 업무 처리</strong>가 된다.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="1. MCP 개념">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">1-7</span>실습 — 노션·구글캘린더 커넥터 연결</h2>
+        <div class="slide-inner">
+          <p class="sub">Claude 데스크탑에 도구를 붙이고, 분양 문서를 요약해 노션에 저장</p>
+          <div class="steps">
+            <li><strong>Claude 데스크탑 설치</strong> — 데스크탑 앱(커넥터 지원)</li>
+            <li><strong>커넥터 연결</strong> — 설정 ▸ 커넥터 ▸ 노션·구글캘린더 추가·로그인</li>
+            <li><strong>문서 요약</strong> — “드라이브의 분양 마케팅 문서를 3줄 요약해줘”</li>
+            <li><strong>노션 저장</strong> — “이 대화 내용을 노션 회의록 페이지로 저장해줘”</li>
+          </div>
+          <div class="prompt"><span class="label">실습 프롬프트</span>구글캘린더에서 이번 주 미팅 일정을 확인하고,
+드라이브의 'OO단지 분양전략.docx'를 요약해줘.
+그다음 요약과 일정을 합쳐 노션 '주간 회의록' 페이지로 저장해줘.</div>
+          <div class="tip warn"><b>주의</b> — 커넥터 연결 시 데이터 접근 권한을 부여한다. 권한 범위를 확인하고, 민감 자료는 신중히.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="1. MCP 개념">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">1-8</span>MCP 장단점</h2>
+        <div class="slide-inner">
+          <p class="sub">강력하지만 만능은 아니다 — 한계를 알고 써야 한다</p>
+          <div class="grid2">
+            <div class="box green"><h3><span class="ico">👍</span>장점</h3><ul><li>복붙·창 전환 제거</li><li>여러 도구를 대화로 연결</li><li>사람처럼 ‘판단’하며 처리</li><li>연결만 하면 비개발자도 사용</li></ul></div>
+            <div class="box amber"><h3><span class="ico">👎</span>단점·한계</h3><ul><li>한 번에 ‘하나씩’ 호출(대량 비효율)</li><li>실행마다 비용·시간</li><li>보안(권한·프롬프트 인젝션) 유의</li><li>대량 반복은 노코드(Make)가 유리</li></ul></div>
+          </div>
+          <div class="lead green"><b>섹션 1 정리</b> — MCP = ‘AI에 도구를 붙이는 규칙’. 판단이 필요한 일에 강하다. <strong>단, 대량 반복은 PART 2(노코드)가 맡고, 둘을 PART 3에서 결합</strong>한다.</div>
+        </div>
+      </section>
+
+      <!-- ===== 섹션 02 divider ===== -->
+      <section class="slide divider" data-sec="2. 멀티 커넥터">
+        <div class="slide-inner">
+          <span class="part-tag">PART 1 · MCP 활용</span>
+          <div class="big-num">02</div>
+          <h2 class="heading">MCP 멀티 커넥터 워크플로</h2>
+          <p class="sub">한 프롬프트로 AI가 여러 도구를 순서대로 호출하게 (2-1 ~ 2-5)</p>
+          <div class="agenda">
+            <span class="pill on">2-1 워크플로 구조</span>
+            <span class="pill">2-2 작동 원리</span>
+            <span class="pill">2-3 캘린더→Gmail</span>
+            <span class="pill">2-4 웹서치→노션</span>
+            <span class="pill">2-5 웹서치→캔바 카드뉴스</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="2. 멀티 커넥터">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">2-1</span>멀티 커넥터 워크플로 구조</h2>
+        <div class="slide-inner">
+          <p class="sub">‘여러 도구’를 하나의 흐름으로 — AI가 순서를 알아서 짠다</p>
+          <div class="flow">
+            <span class="node on">프롬프트</span><span class="arr">→</span>
+            <span class="node">AI가 필요한 도구 판단</span><span class="arr">→</span>
+            <span class="node">도구 1 호출·결과</span><span class="arr">→</span>
+            <span class="node">도구 2 호출·결과</span><span class="arr">→</span>
+            <span class="node on">최종 결과</span>
+          </div>
+          <div class="lead"><b>핵심</b> — 내가 도구를 하나씩 지정하지 않아도 된다. <strong>“무엇을 원하는지”만 말하면</strong> AI가 어떤 도구를 어떤 순서로 쓸지 판단해 실행한다.</div>
+          <div class="tip"><b>전제</b> — Claude 데스크탑에 <b>여러 커넥터가 미리 연결</b>되어 있어야 한다(섹션 1-7). 연결된 도구가 많을수록 가능한 자동화가 늘어난다.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="2. 멀티 커넥터">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">2-2</span>작동 원리</h2>
+        <div class="slide-inner">
+          <p class="sub">‘연결된 상태 + 한 프롬프트 = 자동 순차 호출’</p>
+          <div class="steps teal">
+            <li>Claude 데스크탑에 커넥터/MCP 여러 개 연결</li>
+            <li>사용자가 ‘복합 작업’ 프롬프트 입력</li>
+            <li>AI가 작업을 단계로 쪼개고, 각 단계에 맞는 도구 선택</li>
+            <li>도구를 순서대로 호출하며 결과를 다음 단계로 전달</li>
+            <li>최종 산출물을 한 번에 제시</li>
+          </div>
+          <div class="lead blue"><b>비유</b> — 똑똑한 비서에게 “이거 조사해서, 정리해서, 저기 올려줘” 한마디 하면 알아서 여러 프로그램을 오가며 끝내는 것. 그 비서가 AI.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="2. 멀티 커넥터">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">2-3</span>실습 ➊ 구글 캘린더 → Gmail 초안</h2>
+        <div class="slide-inner">
+          <p class="sub">일정을 확인해 ‘일정 공유 메일’을 자동 작성 (2단계 대화)</p>
+          <div class="flow">
+            <span class="node on">캘린더 MCP</span><span class="arr">→</span>
+            <span class="node">일정 확인</span><span class="arr">→</span>
+            <span class="node on">Gmail MCP</span><span class="arr">→</span>
+            <span class="node">메일 초안</span>
+          </div>
+          <div class="prompt"><span class="label">실습 (2단계)</span>① "이번 주 내 일정 확인해줘"
+② "이 일정으로 팀에게 보낼 일정 공유 Gmail 초안 작성해줘.
+    제목·본문 포함, 정중한 업무 톤으로."</div>
+          <div class="tip"><b>핵심</b> — 캘린더(조회)와 Gmail(작성) 두 도구가 ‘이어서’ 동작. 일정 → 메일이 한 흐름.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="2. 멀티 커넥터">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">2-4</span>실습 ➋ 웹서치로 단지 조사 → 노션 저장</h2>
+        <div class="slide-inner">
+          <p class="sub">웹서치 MCP + 노션 MCP 조합 — 조사부터 정리까지</p>
+          <div class="flow">
+            <span class="node on">웹서치 MCP</span><span class="arr">→</span>
+            <span class="node">단지 정보 조사</span><span class="arr">→</span>
+            <span class="node on">노션 MCP</span><span class="arr">→</span>
+            <span class="node">페이지 자동 저장</span>
+          </div>
+          <div class="prompt"><span class="label">실습 프롬프트</span>'OO지역 2026년 분양 예정 단지'를 웹에서 조사해줘.
+단지명·위치·세대수·예상 분양가·입주시기를 표로 정리하고,
+그 결과를 노션 '분양 리서치' DB에 새 페이지로 저장해줘.</div>
+          <div class="lead"><b>가치</b> — “조사 → 표 정리 → 저장”을 한 번에. 리서치 결과가 자동으로 팀 노션에 쌓인다(지식 자산화).</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="2. 멀티 커넥터">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">2-5</span>실습 ➌ 웹서치 → 캔바 카드뉴스 자동 생성</h2>
+        <div class="slide-inner">
+          <p class="sub">Cowork에서 캔바 커넥터 + 웹서치로 인스타 카드뉴스까지</p>
+          <div class="flow">
+            <span class="node on">웹서치</span><span class="arr">→</span>
+            <span class="node">TOP 5 조사</span><span class="arr">→</span>
+            <span class="node on">캔바 커넥터</span><span class="arr">→</span>
+            <span class="node">카드뉴스 디자인</span>
+          </div>
+          <div class="prompt"><span class="label">실습 프롬프트 (Cowork)</span>'2026년 하반기 분양 예정 아파트 TOP 5'를 조사해서,
+인스타그램 카드뉴스(5장)로 캔바에서 만들어줘.
+표지 + 단지별 1장, 브랜드 톤(신뢰감 있는 네이비), 9:16.</div>
+          <div class="lead green"><b>섹션 2 정리</b> — 도구를 ‘여러 개 붙이면’ 조사→정리→저장→디자인까지 대화로 연결된다. <strong>단, ‘한 번에 하나씩’ 호출이라 대량 작업엔 한계</strong> → PART 2 노코드가 등판.</div>
+        </div>
+      </section>
+
+      <!-- ===== 섹션 03 divider ===== -->
+      <section class="slide divider" data-sec="3. 에이전트 vs 노코드">
+        <div class="slide-inner">
+          <span class="part-tag p2">PART 2 · 노코드 자동화</span>
+          <div class="big-num">03</div>
+          <h2 class="heading">AI 에이전트 vs 노코드 자동화</h2>
+          <p class="sub">‘똑똑한 비서’와 ‘자동 컨베이어 벨트’ — 언제 무엇을 쓸 것인가 (3-1 ~ 3-5)</p>
+          <div class="agenda">
+            <span class="pill on">3-1 노코드 자동화란</span>
+            <span class="pill">3-2 가능 업무 6분류</span>
+            <span class="pill">3-3 비유로 이해</span>
+            <span class="pill">3-4 5가지 차이</span>
+            <span class="pill">3-5 선택 가이드</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="3. 에이전트 vs 노코드">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">3-1</span>노코드 자동화란?</h2>
+        <div class="slide-inner">
+          <p class="sub">복잡한 업무 처리를 ‘코드 없이’ 자동화 — 대표 서비스 Make.com</p>
+          <div class="grid2">
+            <div class="box accent"><h3><span class="ico">🧩</span>노코드 자동화</h3><ul><li>블록(모듈)을 이어 흐름을 설계</li><li>한 번 설정하면 <strong>반복 자동 처리</strong></li><li>코딩 지식 불필요</li></ul></div>
+            <div class="box rose"><h3><span class="ico">⚙️</span>Make.com</h3><ul><li>대표 노코드 자동화 도구</li><li>3,000+ 앱 연결</li><li>시각적 시나리오 편집</li></ul></div>
+          </div>
+          <div class="lead"><b>핵심</b> — MCP가 ‘그때그때 대화로’ 처리한다면, 노코드는 <strong>‘한 번 만들어두고 계속 자동 실행’</strong>한다. 정해진 일을 24시간 반복.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="3. 에이전트 vs 노코드">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">3-2</span>자동화 가능 업무 6분류</h2>
+        <div class="slide-inner">
+          <p class="sub">노코드로 자동화할 수 있는 대표 업무</p>
+          <div class="grid3">
+            <div class="box rose"><h3><span class="ico">💬</span>고객 응대</h3><p>문의 자동 분류·답장</p></div>
+            <div class="box rose"><h3><span class="ico">📥</span>데이터 수집</h3><p>API·웹에서 정기 수집</p></div>
+            <div class="box rose"><h3><span class="ico">📤</span>콘텐츠 발행</h3><p>SNS·블로그 자동 게시</p></div>
+            <div class="box rose"><h3><span class="ico">📄</span>보고서 작성</h3><p>데이터→문서 자동 생성</p></div>
+            <div class="box rose"><h3><span class="ico">📅</span>일정 관리</h3><p>알림·예약·동기화</p></div>
+            <div class="box rose"><h3><span class="ico">🔔</span>모니터링</h3><p>변화 감지·알림 발송</p></div>
+          </div>
+          <div class="tip"><b>부동산 적용</b> — 분양 문의 분류, 실거래가 수집, 인스타 발행, 월간 보고서, 상담 예약, 경쟁사 가격 모니터링… 오늘 실습으로 하나씩.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="3. 에이전트 vs 노코드">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">3-3</span>비유로 이해하기</h2>
+        <div class="slide-inner">
+          <p class="sub">Cowork = 똑똑한 비서, Make = 자동 컨베이어 벨트</p>
+          <div class="grid2">
+            <div class="box purple"><h3><span class="ico">🧑‍💼</span>Claude Cowork (AI 에이전트)</h3><ul><li><strong>복잡한 판단 OK</strong> — 읽고·이해하고·결정</li><li>유연하지만 ‘인건비’가 듦(비용·시간)</li><li>상황마다 다른 일 처리</li></ul></div>
+            <div class="box accent"><h3><span class="ico">🏭</span>Make.com (노코드)</h3><ul><li><strong>빠르고 저렴</strong> — 대량 반복에 강함</li><li>정해진 일만, ‘판단’은 못 함</li><li>같은 작업을 안정적으로</li></ul></div>
+          </div>
+          <div class="lead"><b>핵심 통찰</b> — 비서에게 ‘컨베이어 벨트 작업(같은 일 1,000번)’을 시키면 비싸고 느리다. <strong>판단이 필요하면 비서(Cowork), 반복이면 벨트(Make)</strong>.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="3. 에이전트 vs 노코드">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">3-4</span>5가지 핵심 차이</h2>
+        <div class="slide-inner">
+          <table class="cmp">
+            <thead><tr><th>항목</th><th>AI 에이전트(Cowork)</th><th>노코드(Make)</th></tr></thead>
+            <tbody>
+              <tr><td>자동 실행</td><td>대화로 그때그때</td><td><strong>트리거로 자동·정기</strong></td></tr>
+              <tr><td>비용</td><td>실행마다 비용↑</td><td>오퍼레이션 단가 저렴</td></tr>
+              <tr><td>실행 환경</td><td>로컬·세션 의존</td><td><strong>클라우드 24시간</strong></td></tr>
+              <tr><td>에러 추적</td><td>대화에 묻힘</td><td>실행 로그·재시도</td></tr>
+              <tr><td>보안</td><td>프롬프트 인젝션 취약</td><td>정해진 흐름만 실행</td></tr>
+            </tbody>
+          </table>
+          <div class="tip warn"><b>보안 포인트</b> — AI 에이전트는 ‘읽은 내용’에 속을 수 있다(프롬프트 인젝션). 외부 콘텐츠를 그대로 처리할 땐 주의. 노코드는 흐름이 고정돼 상대적으로 안전.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="3. 에이전트 vs 노코드">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">3-5</span>상황별 선택 가이드</h2>
+        <div class="slide-inner">
+          <p class="sub">둘 중 하나가 아니라 ‘작업에 맞게’</p>
+          <div class="grid2">
+            <div class="box accent"><h3><span class="ico">🏭</span>Make가 유리</h3><ul><li>정해진 작업을 <strong>대량</strong>으로</li><li><strong>안정적</strong>·정기 실행</li><li>비용을 <strong>아껴야</strong> 할 때</li><li>예: 실거래가 매일 수집</li></ul></div>
+            <div class="box purple"><h3><span class="ico">🧠</span>Cowork가 유리</h3><ul><li>사람처럼 <strong>읽고·판단</strong></li><li>글쓰기·해석이 필요할 때</li><li>매번 다른 비정형 작업</li><li>예: 경쟁 단지 전략 분석</li></ul></div>
+          </div>
+          <div class="lead green"><b>섹션 3 정리</b> — 판단=Cowork, 반복=Make. 그리고 <strong>PART 3에서 둘을 결합</strong>하면 ‘AI가 판단해서 Make 컨베이어를 돌리는’ 최강 조합이 된다.</div>
+        </div>
+      </section>
+
+      <!-- ===== 섹션 04 divider ===== -->
+      <section class="slide divider" data-sec="4. Make 핵심">
+        <div class="slide-inner">
+          <span class="part-tag p2">PART 2 · 노코드 자동화</span>
+          <div class="big-num">04</div>
+          <h2 class="heading">노코드 툴 3종 비교 + Make.com 핵심 개념</h2>
+          <p class="sub">Zapier·Make·n8n 중 무엇을, 그리고 Make의 핵심 4개념 (4-1 ~ 4-8)</p>
+          <div class="agenda">
+            <span class="pill on">4-1 3종 비교</span>
+            <span class="pill">4-3 주요 메뉴 6종</span>
+            <span class="pill">4-4 시나리오·모듈</span>
+            <span class="pill">4-5 모듈 4유형</span>
+            <span class="pill">4-6 커넥션</span>
+            <span class="pill">4-7 오퍼레이션·크레딧</span>
+            <span class="pill">4-8 간단 실습</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="4. Make 핵심">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">4-1</span>Zapier vs Make vs n8n 비교</h2>
+        <div class="slide-inner">
+          <p class="sub">가격·실행량·앱 수로 보는 3대 노코드 도구</p>
+          <table class="cmp">
+            <thead><tr><th>도구</th><th>가격(예시)</th><th>실행량</th><th>앱 수</th><th>특징</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Zapier</strong></td><td>$29.99~</td><td>100회</td><td>9,000+</td><td>앱 최다·쉬움</td></tr>
+              <tr><td><strong>Make</strong></td><td>$10.59~</td><td>1,000회</td><td>3,000+</td><td><strong>가성비·시각편집</strong></td></tr>
+              <tr><td><strong>n8n</strong></td><td>무료(셀프호스팅)</td><td>제한 없음*</td><td>500+</td><td>오픈소스·자유도</td></tr>
+            </tbody>
+          </table>
+          <div class="lead"><b>오늘의 선택 = Make</b> — 같은 비용으로 <strong>실행량이 압도적</strong>이고, 시각적 시나리오 편집이 직관적. 부동산 마케터의 ‘대량 반복 자동화’에 최적.</div>
+          <div class="tip"><b>참고</b> — n8n은 무료지만 직접 서버 운영(셀프호스팅)이 필요해 비개발자에겐 진입장벽. 가격·플랜은 변동되니 가입 시 확인.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="4. Make 핵심">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">4-3</span>Make 주요 메뉴 6종</h2>
+        <div class="slide-inner">
+          <p class="sub">화면에 보이는 핵심 메뉴 — 무엇이 어디에</p>
+          <div class="grid3">
+            <div class="box rose"><h3><span class="ico">🔄</span>Scenarios</h3><p>자동화 흐름(시나리오) 만들고 관리</p></div>
+            <div class="box rose"><h3><span class="ico">🤖</span>AI Agents</h3><p>AI 판단 단계 삽입</p></div>
+            <div class="box rose"><h3><span class="ico">🔑</span>Credentials</h3><p>외부 서비스 로그인·키 보관</p></div>
+            <div class="box accent"><h3><span class="ico">📡</span>Webhooks</h3><p>외부 신호로 시나리오 시작</p></div>
+            <div class="box accent"><h3><span class="ico">📋</span>Templates</h3><p>미리 만든 시나리오 견본</p></div>
+            <div class="box accent"><h3><span class="ico">🗃️</span>Data Stores</h3><p>Make 내부 간이 DB</p></div>
+          </div>
+          <div class="tip"><b>초보 팁</b> — 처음엔 <b>Templates</b>에서 비슷한 견본을 골라 변형하는 게 가장 빠르다. 0부터 만들지 말 것.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="4. Make 핵심">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">4-4</span>핵심 개념 ① 시나리오와 모듈</h2>
+        <div class="slide-inner">
+          <p class="sub">자동화의 ‘전체’와 ‘부품’</p>
+          <div class="grid2">
+            <div class="box rose"><h3><span class="ico">🎬</span>시나리오(Scenario)</h3><p>자동화 워크플로 <strong>전체</strong>. “문의 오면 → 분류 → 답장”이라는 하나의 흐름</p></div>
+            <div class="box accent"><h3><span class="ico">🧱</span>모듈(Module)</h3><p>시나리오를 구성하는 <strong>각 단계</strong>(앱·동작 블록). 모듈을 이어 흐름을 만든다</p></div>
+          </div>
+          <div class="flow">
+            <span class="node on">모듈1 (Gmail 수신)</span><span class="arr">→</span>
+            <span class="node on">모듈2 (AI 분류)</span><span class="arr">→</span>
+            <span class="node on">모듈3 (답장 발송)</span>
+          </div>
+          <div class="tip"><b>비유</b> — 시나리오 = 레시피 전체, 모듈 = 각 조리 단계. 단계(모듈)를 순서대로 이으면 요리(자동화)가 완성.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="4. Make 핵심">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">4-5</span>모듈 4가지 유형</h2>
+        <div class="slide-inner">
+          <p class="sub">모든 모듈은 이 4가지 중 하나</p>
+          <div class="grid4">
+            <div class="box rose"><h3><span class="ico">▶️</span>Trigger</h3><p><strong>시작점</strong> — “새 메일이 오면”, “폼 제출되면”</p></div>
+            <div class="box accent"><h3><span class="ico">✏️</span>Action</h3><p><strong>생성·수정·삭제</strong> — 메일 발송, 시트 추가</p></div>
+            <div class="box green"><h3><span class="ico">🔍</span>Search</h3><p><strong>조회·검색</strong> — 시트에서 고객 찾기</p></div>
+            <div class="box purple"><h3><span class="ico">🌐</span>Universal</h3><p><strong>범용(HTTP 등)</strong> — 모든 API 호출</p></div>
+          </div>
+          <div class="lead"><b>핵심</b> — 시나리오는 보통 <strong>Trigger(시작) → Search/Action(처리)</strong> 순. ‘무엇이 시작시키고, 무엇을 하는가’로 모듈을 읽으면 쉽다.</div>
+          <div class="tip"><b>Universal의 힘</b> — 연결 앱이 없어도 <span class="f">HTTP 모듈</span>로 어떤 API든 호출 가능(섹션 5). 만능 열쇠.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="4. Make 핵심">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">4-6</span>핵심 개념 ② 커넥션(Connection)</h2>
+        <div class="slide-inner">
+          <p class="sub">Make와 외부 서비스 사이의 ‘로그인 연결’</p>
+          <div class="grid2">
+            <div class="box rose"><h3><span class="ico">🔗</span>커넥션이란</h3><p>Gmail·시트·노션 등과 Make를 잇는 인증. <strong>최초 1회만</strong> 로그인하면 이후 자동 연결</p></div>
+            <div class="box amber"><h3><span class="ico">🔐</span>보안</h3><ul><li>Credentials에 안전 보관</li><li>권한 범위 확인</li><li>불필요한 연결은 삭제</li></ul></div>
+          </div>
+          <div class="lead"><b>편의</b> — 한 번 연결해두면 그 서비스를 쓰는 모든 시나리오가 재사용. “Gmail 연결” 하나로 메일 관련 자동화 전부 가능.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="4. Make 핵심">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">4-7</span>핵심 개념 ③ 오퍼레이션과 크레딧</h2>
+        <div class="slide-inner">
+          <p class="sub">‘얼마나 쓰는지’를 알아야 비용을 관리한다</p>
+          <div class="grid2">
+            <div class="box accent"><h3><span class="ico">⚡</span>오퍼레이션(Operation)</h3><p>모듈이 <strong>1번 실행될 때마다 1 오퍼레이션</strong>. 시나리오에 모듈 3개면, 1회 실행에 3 소모</p></div>
+            <div class="box rose"><h3><span class="ico">💳</span>크레딧·요금제</h3><p>플랜별 월 오퍼레이션 한도. 초과하면 추가 구매·상위 플랜</p></div>
+          </div>
+          <div class="lead amber"><b>비용 감각(3-4 연결)</b> — “100명에게 메일” = 100명 × 모듈 수만큼 오퍼레이션. <strong>설계 단계에서 모듈을 줄이면 비용이 준다</strong>. 무한 루프·과다 실행 주의.</div>
+          <div class="tip"><b>팁</b> — 테스트는 ‘몇 건’으로 먼저. 전체 돌리기 전에 소량으로 검증해 오퍼레이션·오류를 확인.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="4. Make 핵심">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">4-8</span>간단 실습 — 고객 문의에 답장 보내기</h2>
+        <div class="slide-inner">
+          <p class="sub">Trigger·Action 모듈을 직접 연결하는 첫 시나리오</p>
+          <div class="steps">
+            <li><strong>Trigger</strong> — Gmail “Watch Emails”(새 문의 메일 감지)</li>
+            <li><strong>(선택) AI</strong> — 문의 유형 분류·답변 톤 결정</li>
+            <li><strong>Action</strong> — Gmail “Send Email”(답장 초안/발송)</li>
+            <li><strong>테스트</strong> — Run once로 1건 확인 후 활성화</li>
+          </div>
+          <div class="flow">
+            <span class="node on">새 문의 메일</span><span class="arr">→</span>
+            <span class="node">유형 분류</span><span class="arr">→</span>
+            <span class="node on">답장 발송</span>
+          </div>
+          <div class="lead green"><b>섹션 4 정리</b> — 시나리오=흐름, 모듈=단계(4유형), 커넥션=연결, 오퍼레이션=사용량. <strong>이 4개념이면 어떤 자동화든 읽고 만들 수 있다</strong>.</div>
+        </div>
+      </section>
+
+      <!-- ===== 섹션 05 divider ===== -->
+      <section class="slide divider" data-sec="5. API·데이터수집">
+        <div class="slide-inner">
+          <span class="part-tag p2">PART 2 · 노코드 자동화</span>
+          <div class="big-num">05</div>
+          <h2 class="heading">API 이해 + 공공데이터·Apify로 데이터 수집</h2>
+          <p class="sub">HTTP 모듈로 어떤 데이터든 — 실거래가·경쟁사 정보를 자동 수집 (5-1 ~ 5-7)</p>
+          <div class="agenda">
+            <span class="pill on">5-1 API란</span>
+            <span class="pill">5-2 활용 API 4종</span>
+            <span class="pill">5-3 HTTP 모듈 8옵션</span>
+            <span class="pill">5-4 공공데이터포털</span>
+            <span class="pill">5-5 분양정보 수집</span>
+            <span class="pill">5-6 Apify</span>
+            <span class="pill">5-7 경쟁사 수집</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="5. API·데이터수집">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">5-1</span>API란?</h2>
+        <div class="slide-inner">
+          <p class="sub">‘요청을 보내면 데이터를 돌려주는’ 공식 창구 (2일차 복습+심화)</p>
+          <div class="flow">
+            <span class="node on">요청(Request)</span><span class="arr">→</span>
+            <span class="node">서버</span><span class="arr">→</span>
+            <span class="node on">응답(JSON/XML)</span>
+          </div>
+          <div class="code"><span class="label">응답 데이터 예시 (JSON)</span>{
+  <span class="str">"아파트"</span>: <span class="str">"OO자이"</span>,
+  <span class="str">"전용면적"</span>: <span class="num">84.97</span>,
+  <span class="str">"거래금액"</span>: <span class="str">"120,000"</span>,   <span class="cmt">// 만원</span>
+  <span class="str">"층"</span>: <span class="num">15</span>,
+  <span class="str">"거래일"</span>: <span class="str">"2026-04-12"</span>
+}</div>
+          <div class="lead"><b>핵심</b> — API를 호출하면 사람이 보는 화면이 아니라 <strong>‘정리된 데이터(JSON)’</strong>가 온다. 이걸 시트·문서에 자동으로 쌓는 게 데이터 수집 자동화.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="5. API·데이터수집">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">5-2</span>활용 가능한 API 4종</h2>
+        <div class="slide-inner">
+          <p class="sub">부동산 마케팅에 바로 쓰는 공개 API</p>
+          <table class="cmp">
+            <thead><tr><th>API</th><th>제공</th><th>데이터 / 활용</th></tr></thead>
+            <tbody>
+              <tr><td>빗썸</td><td>거래소</td><td>코인 시세(실시간 데이터 연습용)</td></tr>
+              <tr><td>기상청</td><td>정부</td><td>날씨(현장 행사·촬영 일정)</td></tr>
+              <tr><td><strong>공공데이터포털</strong></td><td>정부</td><td><strong>부동산 실거래가·청약</strong></td></tr>
+              <tr><td>네이버 오픈 API</td><td>네이버</td><td>검색·뉴스·블로그(2일차)</td></tr>
+            </tbody>
+          </table>
+          <div class="lead"><b>오늘의 주역 = 공공데이터포털</b> — 정부가 <strong>무료로</strong> 제공하는 부동산 실거래가·분양 정보. 5-4~5-5에서 직접 수집한다.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="5. API·데이터수집">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">5-3</span>Make HTTP — Make a Request 8개 옵션</h2>
+        <div class="slide-inner">
+          <p class="sub">‘만능 모듈’ HTTP의 설정값 — 이것만 알면 어떤 API든 호출</p>
+          <table class="cmp">
+            <thead><tr><th>옵션</th><th>의미</th></tr></thead>
+            <tbody>
+              <tr><td><code>URL</code></td><td>호출할 API 주소</td></tr>
+              <tr><td><code>Method</code></td><td>보통 <strong>GET</strong>(조회)</td></tr>
+              <tr><td><code>Authentication</code></td><td>인증 방식</td></tr>
+              <tr><td><code>Header</code></td><td>API 키 등 헤더</td></tr>
+              <tr><td><code>Query Parameters</code></td><td>지역·기간 등 조건</td></tr>
+              <tr><td><code>Body content type</code></td><td>전송 데이터 형식</td></tr>
+              <tr><td><code>Parse Response</code></td><td>응답을 자동 파싱(ON 권장)</td></tr>
+              <tr><td><code>Pagination</code></td><td>여러 페이지 자동 수집</td></tr>
+            </tbody>
+          </table>
+          <div class="tip"><b>핵심 3가지</b> — <b>URL + Query Parameters(조건) + Parse Response(ON)</b>면 대부분 해결. 키가 필요하면 Header에. 막히면 ‘API 문서’를 ChatGPT에 붙여 설정값을 물어보면 된다.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="5. API·데이터수집">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">5-4</span>공공데이터포털(data.go.kr) 알아보기</h2>
+        <div class="slide-inner">
+          <p class="sub">정부가 무료로 푸는 방대한 데이터 — 부동산의 보물창고</p>
+          <div class="steps">
+            <li><span class="f">data.go.kr</span> 가입 → 원하는 데이터 검색</li>
+            <li>‘아파트 매매 실거래가’ 등 ▸ <strong>활용 신청</strong></li>
+            <li><strong>서비스키(인증키)</strong> 발급</li>
+            <li>지역코드(법정동 5자리) + 기간(YYYYMM)으로 조회</li>
+          </div>
+          <div class="grid3">
+            <div class="box rose"><h3><span class="ico">🏠</span>실거래가</h3><p>아파트 매매·전월세</p></div>
+            <div class="box rose"><h3><span class="ico">📋</span>청약 정보</h3><p>분양·청약 일정</p></div>
+            <div class="box rose"><h3><span class="ico">📊</span>각종 통계</h3><p>인구·건축·지가</p></div>
+          </div>
+          <div class="tip warn"><b>키 관리</b> — 서비스키는 비밀번호. 코드·시나리오에 노출 주의, 공개 저장소 업로드 금지(2일차 원칙).</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="5. API·데이터수집">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">5-5</span>실습 ➊ 공공데이터로 분양 정보 자동 수집</h2>
+        <div class="slide-inner">
+          <p class="sub">Make 시나리오로 ‘정기 수집 → 시트 저장’</p>
+          <div class="flow">
+            <span class="node on">스케줄(매주)</span><span class="arr">→</span>
+            <span class="node">HTTP(실거래가 API)</span><span class="arr">→</span>
+            <span class="node">데이터 정리</span><span class="arr">→</span>
+            <span class="node on">구글시트 저장</span>
+          </div>
+          <div class="code"><span class="label">HTTP 모듈 설정 (실거래가)</span>URL: https://apis.data.go.kr/.../getRTMSDataSvcAptTrade
+Method: GET
+Query:
+  serviceKey = <span class="str">발급키</span>
+  LAWD_CD    = <span class="num">11680</span>     <span class="cmt"># 강남구(법정동 코드)</span>
+  DEAL_YMD   = <span class="num">202604</span>    <span class="cmt"># 계약 연월</span>
+Parse Response: <span class="kw">Yes</span></div>
+          <div class="lead"><b>효과</b> — 매주 자동으로 최신 실거래가가 시트에 쌓인다. ‘손으로 검색·복붙’ 0. 분양가 책정·시세 모니터링의 데이터 기반.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="5. API·데이터수집">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">5-6</span>Apify 알아보기</h2>
+        <div class="slide-inner">
+          <p class="sub">개발자들이 만든 ‘수집 앱(Actor)’을 API처럼 가져다 쓰는 사이트</p>
+          <div class="grid2">
+            <div class="box accent"><h3><span class="ico">🕸️</span>Apify란</h3><p><span class="f">apify.com</span> — 인스타·구글맵·웹사이트 스크래핑 ‘Actor’를 골라 실행. 웹 스크래핑에 유용</p></div>
+            <div class="box rose"><h3><span class="ico">🎯</span>이럴 때</h3><ul><li>공식 API 없는 사이트 수집</li><li>SNS·리뷰·매물 정보</li><li>경쟁사 콘텐츠 모니터링</li></ul></div>
+          </div>
+          <div class="lead"><b>API vs Apify</b> — 공식 API가 있으면 API(안정·합법), 없으면 Apify(스크래핑). 단 <strong>대상 사이트 약관·로봇 정책 준수</strong> 필수.</div>
+          <div class="tip warn"><b>주의</b> — 과도한 수집·개인정보·로그인 페이지는 금지. 합법적 범위에서, 가능하면 공식 API 우선(3일차 크롤링 원칙).</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="5. API·데이터수집">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">5-7</span>실습 ➋ Apify로 경쟁사 데이터 자동 수집</h2>
+        <div class="slide-inner">
+          <p class="sub">SNS 스크래핑·웹크롤링을 Make 시나리오로</p>
+          <div class="flow">
+            <span class="node on">Apify Actor 실행</span><span class="arr">→</span>
+            <span class="node">결과(JSON)</span><span class="arr">→</span>
+            <span class="node">Make에서 정리</span><span class="arr">→</span>
+            <span class="node on">시트·노션 저장</span>
+          </div>
+          <div class="steps teal" style="margin-top:12px">
+            <li>Apify에서 목적에 맞는 Actor 선택(예: 인스타 프로필 스크래퍼)</li>
+            <li>대상·조건 입력 후 API 토큰 발급</li>
+            <li>Make HTTP 모듈로 Actor 실행·결과 수신</li>
+            <li>경쟁사 게시물·반응을 시트에 정리</li>
+          </div>
+          <div class="lead green"><b>섹션 5 정리</b> — API(공공데이터)·Apify(스크래핑)로 ‘데이터 수집’을 자동화. <strong>수집된 데이터가 보고서·카피·비교의 원천</strong>이 된다(섹션 6·8로 연결).</div>
+        </div>
+      </section>
+
+      <!-- ===== 섹션 06 divider ===== -->
+      <section class="slide divider" data-sec="6. 문서 자동화">
+        <div class="slide-inner">
+          <span class="part-tag p2">PART 2 · 노코드 자동화</span>
+          <div class="big-num">06</div>
+          <h2 class="heading">문서 생성 자동화 — 폼 접수에서 PDF 발송까지</h2>
+          <p class="sub">한 가지 패턴만 익히면 거의 모든 문서 자동화가 가능 (6-1 ~ 6-4)</p>
+          <div class="agenda">
+            <span class="pill on">6-1 핵심 패턴 5단계</span>
+            <span class="pill">6-2 Tally→문서→메일</span>
+            <span class="pill">6-3 확장 4종</span>
+            <span class="pill">6-4 패턴의 범용성</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="6. 문서 자동화">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">6-1</span>핵심 패턴 5단계</h2>
+        <div class="slide-inner">
+          <p class="sub">‘수집 → (분석) → 생성 → 변환 → 발송’ — 문서 자동화의 황금 공식</p>
+          <div class="flow">
+            <span class="node on">① 폼/데이터 수집</span><span class="arr">→</span>
+            <span class="node">② AI 분석</span><span class="arr">→</span>
+            <span class="node">③ 템플릿 문서 생성</span><span class="arr">→</span>
+            <span class="node">④ PDF 변환</span><span class="arr">→</span>
+            <span class="node on">⑤ 발송/저장</span>
+          </div>
+          <div class="grid3" style="margin-top:14px">
+            <div class="box rose"><h3><span class="ico">📥</span>① 수집</h3><p>폼·시트·API로 입력 받기</p></div>
+            <div class="box accent"><h3><span class="ico">🧠</span>② (AI 분석)</h3><p>필요 시 내용 가공·개인화</p></div>
+            <div class="box green"><h3><span class="ico">📄</span>③~⑤ 생성·발송</h3><p>템플릿 채워 PDF로, 메일·저장</p></div>
+          </div>
+          <div class="tip"><b>핵심</b> — ②(AI 분석)는 선택. 단순 치환이면 생략, 개인 맞춤이 필요하면 AI를 끼운다.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="6. 문서 자동화">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">6-2</span>실습 — Tally 폼 → Gemini → 맞춤 문서 → 메일</h2>
+        <div class="slide-inner">
+          <p class="sub">고객이 폼을 채우면, 맞춤 문서가 PDF로 자동 발송</p>
+          <div class="steps">
+            <li><strong>Tally 폼</strong> — 고객이 이름·필요 서비스·예산 입력</li>
+            <li><strong>Make Trigger</strong> — 폼 제출 감지</li>
+            <li><strong>Gemini(AI)</strong> — 입력 기반 맞춤 문구 생성</li>
+            <li><strong>구글 문서 템플릿 복사 + 변수 치환</strong></li>
+            <li><strong>PDF 변환 → 메일 자동 발송</strong></li>
+          </div>
+          <div class="flow">
+            <span class="node on">Tally 제출</span><span class="arr">→</span>
+            <span class="node">Gemini 맞춤글</span><span class="arr">→</span>
+            <span class="node">구글문서 치환</span><span class="arr">→</span>
+            <span class="node">PDF</span><span class="arr">→</span>
+            <span class="node on">메일 발송</span>
+          </div>
+          <div class="lead"><b>결과</b> — 고객이 폼을 낸 ‘몇 초 뒤’ 맞춤 제안서가 메일함에. 사람 손 0. 분양 상담 신청 → 맞춤 단지 소개서 자동 발송에 직결.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="6. 문서 자동화">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">6-3</span>활용 확장 아이디어 4종</h2>
+        <div class="slide-inner">
+          <p class="sub">같은 패턴, 다른 문서 — 무궁무진</p>
+          <div class="grid2">
+            <div class="box rose"><h3><span class="ico">🎓</span>수료증 발급</h3><p>구글 슬라이드 템플릿 + 이름 치환 → 교육 수료증 자동</p></div>
+            <div class="box accent"><h3><span class="ico">🧾</span>견적서</h3><p>구글 독스 + 항목·금액 치환 → 맞춤 견적서</p></div>
+            <div class="box green"><h3><span class="ico">📰</span>보도자료</h3><p>핵심 정보 입력 → AI가 보도자료 초안 자동 작성</p></div>
+            <div class="box purple"><h3><span class="ico">🏠</span>매물 소개서</h3><p>고객 성향별 맞춤 매물 소개서 자동 생성</p></div>
+          </div>
+          <div class="lead"><b>부동산 핵심</b> — ‘고객 성향별 매물 소개서’ — 고객 정보만 넣으면 취향·예산에 맞춘 소개서가 자동으로. 영업 생산성 폭증.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="6. 문서 자동화">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">6-4</span>패턴의 범용성</h2>
+        <div class="slide-inner">
+          <p class="sub">이 ‘한 가지 패턴’이 곧 문서 업무 전체의 자동화</p>
+          <div class="lead green"><b>한 번 익히면</b> — <strong>‘수집 → 생성 → 변환 → 발송’</strong> 패턴은 입력과 템플릿만 바꾸면 수료증·견적서·보도자료·소개서·계약 안내… <strong>거의 모든 문서</strong>에 적용된다.</div>
+          <div class="grid3">
+            <div class="box rose"><h3><span class="ico">🔁</span>바꾸는 것</h3><p>입력 폼 · 문서 템플릿 · 받는 사람</p></div>
+            <div class="box rose"><h3><span class="ico">🔒</span>그대로인 것</h3><p>5단계 흐름 구조</p></div>
+            <div class="box rose"><h3><span class="ico">📈</span>얻는 것</h3><p>반복 문서 작업 시간 0</p></div>
+          </div>
+          <div class="lead"><b>섹션 6 정리</b> — 문서 자동화는 ‘패턴 하나’. <strong>PART 3에서 이 자동화를 AI 대화로 ‘대량 실행’</strong>하면 진짜 폭발한다.</div>
+        </div>
+      </section>
+
+      <!-- ===== 섹션 07 divider ===== -->
+      <section class="slide divider" data-sec="7. MCP×Make">
+        <div class="slide-inner">
+          <span class="part-tag p3">PART 3 · MCP × 노코드 결합</span>
+          <div class="big-num">07</div>
+          <h2 class="heading">MCP × Make 결합 — 시나리오를 AI 도구로 등록</h2>
+          <p class="sub">AI의 ‘판단’ + Make의 ‘대량 처리’ = 대화 한 줄로 100명 개인화 메일 (7-1 ~ 7-5)</p>
+          <div class="agenda">
+            <span class="pill on">7-1 MCP 단독 한계</span>
+            <span class="pill">7-2 Make 팬아웃</span>
+            <span class="pill">7-3 등록 절차 3단</span>
+            <span class="pill">7-4 1→10명 실습</span>
+            <span class="pill">7-5 개인화 일괄발송</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="7. MCP×Make">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">7-1</span>MCP 단독의 한계</h2>
+        <div class="slide-inner">
+          <p class="sub">‘판단’은 잘하지만 ‘대량 반복’은 약하다</p>
+          <div class="grid2">
+            <div class="box amber"><h3><span class="ico">⚠️</span>한계</h3><ul><li>Claude는 한 번에 <strong>하나의 도구만</strong> 호출</li><li>“100번 메일”을 100번 루프 → 비효율</li><li>반복이 길수록 <strong>에러율↑·비용↑</strong></li></ul></div>
+            <div class="box accent"><h3><span class="ico">💡</span>그래서</h3><p>판단은 AI(MCP)에게, <strong>대량 실행은 Make에게</strong> 맡기면 된다. 각자 잘하는 일을.</p></div>
+          </div>
+          <div class="lead amber"><b>비유</b> — 똑똑한 비서에게 “봉투 100장 직접 접어”라고 하면 비싸고 느리다. 비서는 ‘무엇을 보낼지 판단’만, <strong>봉투 접기(반복)는 기계(Make)</strong>에게.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="7. MCP×Make">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">7-2</span>Make 시나리오의 강점 — 팬아웃(Fan-out)</h2>
+        <div class="slide-inner">
+          <p class="sub">하나의 입력을 ‘여러 개로 펼쳐’ 병렬 대량 처리</p>
+          <div class="flow">
+            <span class="node on">단지 정보 1건</span><span class="arr">→</span>
+            <span class="node">고객 DB 100명</span><span class="arr">→</span>
+            <span class="node on">100개 개인화 메일</span>
+          </div>
+          <div class="lead"><b>팬아웃이란</b> — “고객 100명 DB에 각각 맞춤 분양 소개 메일 보내줘” 한 번에, Make가 <strong>100건으로 펼쳐 병렬 처리</strong>. 대량·고속·저렴.</div>
+          <div class="grid3">
+            <div class="box accent"><h3><span class="ico">⚡</span>대량</h3><p>수백·수천 건도 한 흐름</p></div>
+            <div class="box accent"><h3><span class="ico">⏱️</span>고속</h3><p>병렬 처리로 빠르게</p></div>
+            <div class="box accent"><h3><span class="ico">💰</span>저렴</h3><p>오퍼레이션 단가로 절감</p></div>
+          </div>
+          <div class="tip"><b>결론</b> — ‘무엇을·누구에게’는 AI가 판단, ‘100번 실행’은 Make가 팬아웃. 둘을 잇는 게 7-3.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="7. MCP×Make">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">7-3</span>시나리오 → MCP 도구 등록 절차 3단</h2>
+        <div class="slide-inner">
+          <p class="sub">Make 시나리오를 ‘AI가 부를 수 있는 도구’로 만든다</p>
+          <div class="steps green">
+            <li><strong>인풋/아웃풋 만들기</strong> — 시나리오에 ‘입구(받을 값)’와 ‘출구(돌려줄 값)’ 정의</li>
+            <li><strong>[요청 시 실행]으로 변경</strong> — 자동 실행 대신 ‘호출하면 실행’ 모드</li>
+            <li><strong>Claude에 Make.com 연결</strong> — Make MCP로 이 시나리오를 AI 도구로 등록</li>
+          </div>
+          <div class="flow">
+            <span class="node on">시나리오</span><span class="arr">→</span>
+            <span class="node">입구·출구 정의</span><span class="arr">→</span>
+            <span class="node">요청 시 실행</span><span class="arr">→</span>
+            <span class="node on">Claude의 도구가 됨</span>
+          </div>
+          <div class="lead"><b>의미</b> — 등록하면 Claude가 “이 시나리오 실행해”라고 부를 수 있다. <strong>AI가 노코드 자동화를 ‘손발’처럼 부린다</strong>.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="7. MCP×Make">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">7-4</span>실습 — 단지 정보 1개로 10명+ 맞춤 메일</h2>
+        <div class="slide-inner">
+          <p class="sub">입구로 값을 넣고, 시나리오가 펼쳐 처리하고, 출구로 결과 회수</p>
+          <div class="steps green">
+            <li><strong>[입구/출구] 생성</strong> — 입구: 단지 정보 / 출구: 발송 결과</li>
+            <li><strong>입구 값으로 시나리오 동작</strong> — 고객 DB와 결합해 개인화</li>
+            <li><strong>출구로 결과 회수</strong> — 몇 명에게 보냈는지 반환</li>
+            <li><strong>AI 호출로 실행 트리거</strong> — Claude가 시나리오를 호출</li>
+          </div>
+          <div class="prompt"><span class="label">실습 프롬프트 (Claude)</span>방금 등록한 Make 시나리오를 실행해줘.
+단지 정보: 'OO자이, 강남 역세권, 84㎡, 12억대, 6월 분양'
+대상: 고객 DB 시트의 가망 고객 10명에게 각자 맞춤 메일 발송.</div>
+          <div class="tip"><b>핵심 체험</b> — 한 줄 대화가 ‘10명 개인화 메일 발송’으로. 이게 MCP×Make 결합의 정수.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="7. MCP×Make">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">7-5</span>회사메일 연동 + 개인화 메일 일괄 발송</h2>
+        <div class="slide-inner">
+          <p class="sub">대화 한 줄로 ‘DB 명단 전체’에 개인화 발송</p>
+          <div class="prompt"><span class="label">한 줄 대화로 실행</span>"고객 DB 시트에서 가져온 명단에게,
+이 단지 정보를 각자 맞춤으로 개인화해서 일괄 발송해줘."</div>
+          <div class="flow">
+            <span class="node on">한 줄 명령</span><span class="arr">→</span>
+            <span class="node">Claude 판단·호출</span><span class="arr">→</span>
+            <span class="node">Make 팬아웃</span><span class="arr">→</span>
+            <span class="node on">100명 개인화 발송</span>
+          </div>
+          <div class="lead green"><b>섹션 7 정리</b> — MCP(판단)와 Make(대량)를 결합 = <strong>“대화 한 줄로 100명 개인화 메일”</strong>. 오늘 강의의 하이라이트이자 자동화의 완성형.</div>
+          <div class="tip warn"><b>주의</b> — 대량 발송은 스팸·수신 동의·발송량 제한을 지켜야 한다. 테스트는 소수로, 동의받은 명단에만.</div>
+        </div>
+      </section>
+
+      <!-- ===== 섹션 08 divider ===== -->
+      <section class="slide divider" data-sec="8. 통합 활용">
+        <div class="slide-inner">
+          <span class="part-tag p3">PART 3 · MCP × 노코드 결합</span>
+          <div class="big-num">08</div>
+          <h2 class="heading">통합 활용 아이디어 + 시나리오 자동 생성</h2>
+          <p class="sub">대화 한 줄로 끝내는 3대 시나리오, 그리고 시나리오 자체를 AI가 만들기 (8-1 ~ 8-5)</p>
+          <div class="agenda">
+            <span class="pill on">8-1 경쟁분석+리포트+메일</span>
+            <span class="pill">8-2 SNS 기획+이미지+발행</span>
+            <span class="pill">8-3 노션→보고서→메일</span>
+            <span class="pill">8-4 시나리오 JSON 자동생성</span>
+            <span class="pill">8-5 자동생성 예시</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="8. 통합 활용">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">8-1</span>시나리오 ① 경쟁 단지 분석 + 리포트 + 메일</h2>
+        <div class="slide-inner">
+          <p class="sub">조사부터 발송까지 — 한 줄 명령</p>
+          <div class="flow">
+            <span class="node on">경쟁 분양가 조사</span><span class="arr">→</span>
+            <span class="node">비교표 정리</span><span class="arr">→</span>
+            <span class="node on">메일 발송</span>
+          </div>
+          <div class="prompt"><span class="label">한 줄 명령</span>"OO지역 경쟁 단지 분양가를 조사해서 비교표로 정리하고,
+우리 팀에게 메일로 발송해줘."</div>
+          <div class="lead"><b>도구 조합</b> — 웹서치/Apify(조사) + AI(비교 정리) + Make/Gmail(발송). 섹션 5·6·7의 종합.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="8. 통합 활용">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">8-2</span>시나리오 ② SNS 콘텐츠 기획 + 이미지 + 발행</h2>
+        <div class="slide-inner">
+          <p class="sub">기획부터 카드뉴스 생성까지 일괄</p>
+          <div class="flow">
+            <span class="node on">게시물 3개 기획</span><span class="arr">→</span>
+            <span class="node">카드뉴스 이미지 생성</span><span class="arr">→</span>
+            <span class="node on">발행/예약</span>
+          </div>
+          <div class="prompt"><span class="label">한 줄 명령</span>"이번 주 분양 홍보 인스타 게시물 3개를 기획하고,
+각각 카드뉴스 이미지까지 생성해줘. 톤은 신뢰감 있게."</div>
+          <div class="lead"><b>도구 조합</b> — AI(기획·카피) + 캔바/Nano-Banana(이미지, 3·5일차) + Make(발행 자동화). 콘텐츠 공장.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="8. 통합 활용">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">8-3</span>시나리오 ③ 노션 데이터 → 보고서 → 메일</h2>
+        <div class="slide-inner">
+          <p class="sub">쌓인 데이터를 월간 보고서로, 그리고 발송</p>
+          <div class="flow">
+            <span class="node on">노션 분양 실적</span><span class="arr">→</span>
+            <span class="node">월간 보고서 정리</span><span class="arr">→</span>
+            <span class="node on">메일 발송</span>
+          </div>
+          <div class="prompt"><span class="label">한 줄 명령</span>"노션의 이번 달 분양 실적 데이터를 가져와서
+월간 보고서로 정리하고, 팀과 임원에게 메일로 발송해줘."</div>
+          <div class="lead"><b>도구 조합</b> — 노션 MCP(데이터) + AI(보고서 작성, PSK 구조 5일차) + Gmail(발송). 매월 반복 업무를 한 줄로.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="8. 통합 활용">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">8-4</span>Context7 MCP + Make MCP로 시나리오 JSON 자동 생성</h2>
+        <div class="slide-inner">
+          <p class="sub">시나리오를 ‘직접 만드는’ 대신, AI에게 ‘만들어 달라’고</p>
+          <div class="grid2">
+            <div class="box rose"><h3><span class="ico">📚</span>Context7 MCP</h3><p>최신 기술 문서·레퍼런스를 AI에 제공 → 정확한 시나리오 설계</p></div>
+            <div class="box accent"><h3><span class="ico">⚙️</span>Make MCP</h3><p>생성된 시나리오 JSON을 Make에 등록·실행</p></div>
+          </div>
+          <div class="lead"><b>한 단계 위</b> — 이제 ‘시나리오를 손으로 만들기’조차 자동화. AI가 <strong>시나리오 설계도(JSON)</strong>를 만들고, Make에 바로 올린다. ‘자동화를 자동화’.</div>
+          <div class="tip"><b>의미</b> — 노코드보다 더 빠른 ‘노터치’. 무엇을 자동화할지만 말하면 흐름까지 AI가 설계.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="8. 통합 활용">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">8-5</span>자동 생성 예시 프롬프트</h2>
+        <div class="slide-inner">
+          <p class="sub">말로 설명하면 시나리오 JSON이 나온다</p>
+          <div class="prompt"><span class="label">시나리오 자동 생성 프롬프트</span>다음 자동화 시나리오를 Make용 JSON으로 만들어줘.
+"유튜브에 새 댓글이 달리면 → 구글시트에 기록 →
+ 긍정 댓글에는 감사 대댓글 작성 →
+ 부정 댓글은 담당자에게 알림 발송"
+각 단계의 모듈(Trigger/Action)과 연결을 포함해서.</div>
+          <div class="code"><span class="label">생성 결과 (구조 예시)</span>{
+  <span class="str">"trigger"</span>: <span class="str">"YouTube: Watch Comments"</span>,
+  <span class="str">"steps"</span>: [
+    { <span class="str">"module"</span>: <span class="str">"Sheets: Add Row"</span> },
+    { <span class="str">"module"</span>: <span class="str">"AI: Classify sentiment"</span> },
+    { <span class="str">"router"</span>: [
+        { <span class="str">"if"</span>: <span class="str">"긍정"</span>, <span class="str">"do"</span>: <span class="str">"Reply comment"</span> },
+        { <span class="str">"if"</span>: <span class="str">"부정"</span>, <span class="str">"do"</span>: <span class="str">"Notify staff"</span> }
+    ]}
+  ]
+}</div>
+          <div class="lead green"><b>섹션 8 정리</b> — 3대 시나리오로 실무를 한 줄에. 나아가 <strong>시나리오 자체를 AI가 생성</strong>. ‘자동화를 만드는 일’까지 자동화되는 지점에 도달.</div>
+        </div>
+      </section>
+
+      <!-- ===== 마무리 ===== -->
+      <section class="slide" data-sec="마무리">
+        <div class="slide-inner">
+          <span class="kicker green">WRAP-UP</span>
+          <h2 class="heading">오늘 핵심 8가지</h2>
+          <ul class="points">
+            <li><strong>MCP</strong> — AI에 외부 도구를 붙이는 ‘통신 규칙’(HTTP의 AI 버전)</li>
+            <li><strong>멀티 커넥터</strong> — 한 프롬프트로 여러 도구를 순서대로 호출</li>
+            <li><strong>에이전트 vs 노코드</strong> — 판단=Cowork, 반복=Make</li>
+            <li><strong>Make 핵심</strong> — 시나리오·모듈(4유형)·커넥션·오퍼레이션</li>
+            <li><strong>API·데이터수집</strong> — HTTP 모듈로 공공데이터·Apify 자동 수집</li>
+            <li><strong>문서 자동화</strong> — ‘수집→생성→변환→발송’ 한 패턴이 전부</li>
+            <li><strong>MCP × Make</strong> — 시나리오를 AI 도구로 등록, 대량 팬아웃</li>
+            <li><strong>통합·자동생성</strong> — 한 줄 명령 3대 시나리오 + 시나리오 JSON 생성</li>
+          </ul>
+          <div class="lead"><b>관통하는 원리</b> — <strong>“판단은 AI(MCP), 반복은 자동화(Make), 둘을 결합”</strong>. 코드 없이 ‘대화 한 줄로 100명에게 개인화 메일’이 되는 게 오늘의 도달점.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="마무리">
+        <div class="slide-inner">
+          <span class="kicker amber">CHEAT SHEET</span>
+          <h2 class="heading">바로 쓰는 치트시트</h2>
+          <div class="grid2">
+            <div class="box rose"><h3><span class="ico">🧭</span>도구 선택</h3><p>판단·비정형 = <strong>MCP/Cowork</strong> · 대량·정기 = <strong>Make</strong> · 둘 다 = <strong>결합(7장)</strong></p></div>
+            <div class="box accent"><h3><span class="ico">🧱</span>Make 4개념</h3><p>시나리오(흐름) · 모듈(Trigger·Action·Search·Universal) · 커넥션 · 오퍼레이션</p></div>
+          </div>
+          <div class="prompt" style="margin-top:4px"><span class="label">문서 자동화 패턴</span>① 폼/데이터 수집 → ② (AI 분석) → ③ 템플릿 문서 생성
+→ ④ PDF 변환 → ⑤ 발송/저장   (입력·템플릿만 바꿔 재사용)</div>
+          <div class="box amber"><h3><span class="ico">⚖️</span>꼭 지킬 것</h3><p>API 키·커넥션 권한 최소화 · 대량 발송 수신동의·스팸 규정 · 스크래핑 약관 준수 · 소량 테스트 후 전체 실행</p></div>
+        </div>
+      </section>
+
+      <section class="slide divider" data-sec="마무리">
+        <div class="slide-inner">
+          <span class="kicker">DAY 6 · 끝</span>
+          <h1 class="title">수고하셨습니다 👏</h1>
+          <p class="sub">오늘 만든 MCP 연결과 Make 시나리오로, 우리 팀의 반복 업무 하나를 자동화해 보세요.</p>
+          <div class="lead" style="margin-top:14px"><b>다음 시간(7일차)</b> — Claude Cowork·Skills·로컬 MCP로 이어집니다.</div>
+          <div style="margin-top:18px"><a class="home" href="index.html" style="font-size:15px;color:var(--rose)">← 전체 커리큘럼으로 돌아가기</a></div>
+        </div>
+      </section>
+
+    </div><!-- /stage -->
+
+    <div class="nav">
+      <a class="home" href="index.html">⌂ 커리큘럼</a>
+      <button class="navbtn" id="prev" aria-label="이전">‹</button>
+      <div class="progress"><div class="bar" id="bar"></div></div>
+      <button class="navbtn" id="next" aria-label="다음">›</button>
+      <div class="counter" id="counter">1 / 1</div>
+    </div>
+  </div>
+
+  <div class="hint" id="hint">← → 방향키로 이동 · F 전체화면</div>
+
+  <script>
+    const slides = Array.from(document.querySelectorAll('.slide'));
+    const bar = document.getElementById('bar');
+    const counter = document.getElementById('counter');
+    const secLabel = document.getElementById('secLabel');
+    const prevBtn = document.getElementById('prev');
+    const nextBtn = document.getElementById('next');
+    const hint = document.getElementById('hint');
+    let idx = 0;
+    function render() {
+      slides.forEach((s, i) => s.classList.toggle('active', i === idx));
+      const total = slides.length;
+      bar.style.width = ((idx + 1) / total * 100) + '%';
+      counter.textContent = (idx + 1) + ' / ' + total;
+      secLabel.textContent = slides[idx].dataset.sec || '';
+      prevBtn.disabled = idx === 0;
+      nextBtn.disabled = idx === total - 1;
+      slides[idx].scrollTop = 0;
+      if (location.hash !== '#' + (idx + 1)) history.replaceState(null, '', '#' + (idx + 1));
+    }
+    function go(n) { idx = Math.max(0, Math.min(slides.length - 1, n)); render(); }
+    prevBtn.addEventListener('click', () => go(idx - 1));
+    nextBtn.addEventListener('click', () => go(idx + 1));
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') { e.preventDefault(); go(idx + 1); }
+      else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); go(idx - 1); }
+      else if (e.key === 'Home') { go(0); }
+      else if (e.key === 'End') { go(slides.length - 1); }
+      else if (e.key === 'f' || e.key === 'F') { if (!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); }
+    });
+    const sectionStart = {};
+    slides.forEach((s, i) => { const sec = s.dataset.sec; if (sec && !(sec in sectionStart)) sectionStart[sec] = i; });
+    const tocData = [
+      ['1','MCP 개념','외부 도구 붙이는 통신 규칙','PART 1','1. MCP 개념'],
+      ['2','MCP 멀티 커넥터','한 프롬프트로 여러 도구 호출','PART 1','2. 멀티 커넥터'],
+      ['3','AI 에이전트 vs 노코드','언제 무엇을 쓸 것인가','PART 2','3. 에이전트 vs 노코드'],
+      ['4','노코드 3종 + Make 핵심','Zapier·Make·n8n·시나리오·모듈','PART 2','4. Make 핵심'],
+      ['5','API + 공공데이터·Apify','HTTP 모듈·실거래가·웹 스크래핑','PART 2','5. API·데이터수집'],
+      ['6','문서 생성 자동화','폼→AI→문서→PDF→발송','PART 2','6. 문서 자동화'],
+      ['7','MCP × Make 결합','시나리오를 AI 도구로 등록','PART 3','7. MCP×Make'],
+      ['8','통합 활용 + 자동 생성','3대 시나리오·시나리오 JSON 생성','PART 3','8. 통합 활용'],
+    ];
+    const tocEl = document.getElementById('toc');
+    tocData.forEach(([n, t, d, pl, sec]) => {
+      const li = document.createElement('li');
+      li.innerHTML = `<span class="n">${n}</span><span><span class="pl">${pl}</span><br/><span class="t">${t}</span><br/><span class="d">${d}</span></span>`;
+      li.addEventListener('click', () => { if (sec in sectionStart) go(sectionStart[sec]); });
+      tocEl.appendChild(li);
+    });
+    const startHash = parseInt(location.hash.replace('#', ''), 10);
+    if (startHash && startHash >= 1 && startHash <= slides.length) idx = startHash - 1;
+    render();
+    setTimeout(() => { hint.style.transition = 'opacity 1s'; hint.style.opacity = '0'; }, 4000);
+  </script>
+</body>
+</html>
