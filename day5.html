@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>5일차 · 리서치 AI 6종 & 분양 마케팅 자동화 | KREMA</title>
+  <style>
+    :root {
+      --bg: #0f172a; --bg-soft: #1e293b; --card: #1e293b; --card-2: #273449;
+      --text: #e2e8f0; --text-dim: #94a3b8; --accent: #38bdf8; --accent-strong: #0ea5e9;
+      --highlight: #f59e0b; --green: #34d399; --pink: #f472b6; --purple: #a78bfa;
+      --teal: #2dd4bf; --border: #334155; --code-bg: #0b1222;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      font-family: "Pretendard", "Malgun Gothic", -apple-system, BlinkMacSystemFont, sans-serif;
+      background: radial-gradient(1200px 700px at 50% -15%, #133b3a 0%, var(--bg) 55%);
+      color: var(--text); line-height: 1.6; overflow: hidden;
+    }
+    .deck { height: 100vh; display: flex; flex-direction: column; }
+    .stage { flex: 1; position: relative; overflow: hidden; }
+    .slide { position: absolute; inset: 0; padding: 50px clamp(24px, 6vw, 92px) 34px; overflow-y: auto; display: none; flex-direction: column; gap: 13px; animation: fade 0.35s ease; }
+    .slide.active { display: flex; }
+    @keyframes fade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .slide-inner { max-width: 1000px; margin: 0 auto; width: 100%; }
+
+    .kicker { display: inline-block; font-size: 12px; font-weight: 700; letter-spacing: 0.14em; color: var(--teal); border: 1px solid var(--teal); border-radius: 999px; padding: 4px 13px; margin-bottom: 14px; }
+    .kicker.amber { color: var(--highlight); border-color: var(--highlight); }
+    .kicker.green { color: var(--green); border-color: var(--green); }
+    .kicker.pink  { color: var(--pink);  border-color: var(--pink); }
+    .kicker.blue  { color: var(--accent); border-color: var(--accent); }
+    .kicker.purple{ color: var(--purple); border-color: var(--purple); }
+
+    h1.title { font-size: clamp(28px, 5vw, 44px); font-weight: 800; letter-spacing: -0.02em; line-height: 1.2; margin-bottom: 12px; }
+    h2.heading { font-size: clamp(20px, 3.1vw, 29px); font-weight: 800; letter-spacing: -0.02em; line-height: 1.25; margin-bottom: 4px; }
+    h2.heading .num { color: var(--teal); margin-right: 10px; font-variant-numeric: tabular-nums; }
+    .sub { color: var(--text-dim); font-size: clamp(14px, 1.6vw, 16px); margin-bottom: 6px; }
+
+    p { font-size: clamp(13.5px, 1.5vw, 15.5px); }
+    strong { color: #fff; }
+    .hl { color: var(--highlight); font-weight: 700; }
+    .ac { color: var(--accent); font-weight: 700; }
+    .gr { color: var(--green); font-weight: 700; }
+    .tl { color: var(--teal); font-weight: 700; }
+
+    ul.points { list-style: none; display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+    ul.points > li { position: relative; padding-left: 25px; font-size: clamp(13.5px, 1.5vw, 15.5px); }
+    ul.points > li::before { content: ""; position: absolute; left: 4px; top: 9px; width: 8px; height: 8px; border-radius: 50%; background: var(--teal); }
+    ul.points ul { list-style: none; margin-top: 6px; padding-left: 4px; display: flex; flex-direction: column; gap: 5px; }
+    ul.points ul li { position: relative; padding-left: 18px; color: var(--text-dim); font-size: 13.5px; }
+    ul.points ul li::before { content: "–"; position: absolute; left: 2px; color: var(--text-dim); }
+
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px; }
+    .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 8px; }
+    .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 8px; }
+
+    .box { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; }
+    .box h3 { font-size: 14px; font-weight: 700; margin-bottom: 7px; display: flex; align-items: center; gap: 8px; }
+    .box .ico { font-size: 17px; }
+    .box p, .box li { font-size: 13px; color: var(--text-dim); }
+    .box ul { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+    .box ul li { position: relative; padding-left: 15px; }
+    .box ul li::before { content: "·"; position: absolute; left: 3px; color: var(--teal); font-weight: 700; }
+    .box.accent { border-color: var(--accent); }
+    .box.amber  { border-color: var(--highlight); background: rgba(245,158,11,0.06); }
+    .box.green  { border-color: var(--green); }
+    .box.pink   { border-color: var(--pink); }
+    .box.purple { border-color: var(--purple); }
+    .box.teal   { border-color: var(--teal); background: rgba(45,212,191,0.05); }
+
+    .lead { background: linear-gradient(180deg, rgba(45,212,191,0.10), rgba(45,212,191,0.02)); border: 1px solid var(--teal); border-radius: 14px; padding: 12px 16px; font-size: clamp(13.5px, 1.5vw, 15px); margin: 4px 0; }
+    .lead b { color: var(--teal); }
+    .lead.blue { background: linear-gradient(180deg, rgba(56,189,248,0.10), rgba(56,189,248,0.02)); border-color: var(--accent); }
+    .lead.blue b { color: var(--accent); }
+    .lead.amber { background: linear-gradient(180deg, rgba(245,158,11,0.10), rgba(245,158,11,0.02)); border-color: var(--highlight); }
+    .lead.amber b { color: var(--highlight); }
+
+    .steps { counter-reset: step; display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+    .steps li { list-style: none; position: relative; padding-left: 36px; font-size: 13.5px; min-height: 25px; display: flex; align-items: center; }
+    .steps li::before { counter-increment: step; content: counter(step); position: absolute; left: 0; top: 0; width: 24px; height: 24px; border-radius: 50%; background: var(--teal); color: var(--bg); font-weight: 800; font-size: 12px; display: flex; align-items: center; justify-content: center; }
+    .steps.blue li::before { background: var(--accent); }
+    .steps.green li::before { background: var(--green); }
+    .steps.pink li::before { background: var(--pink); }
+    .steps.purple li::before { background: var(--purple); }
+
+    /* 프롬프트 (앰버) */
+    .prompt { background: var(--code-bg); border: 1px solid var(--border); border-left: 3px solid var(--highlight); border-radius: 10px; padding: 12px 14px; margin-top: 9px; font-family: "D2Coding", "Consolas", monospace; font-size: 12.8px; color: #cbd5e1; white-space: pre-wrap; line-height: 1.6; }
+    .prompt .label { display: block; font-family: "Pretendard", sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: var(--highlight); margin-bottom: 5px; }
+
+    /* 코드 (초록) */
+    .code { background: var(--code-bg); border: 1px solid var(--border); border-left: 3px solid var(--green); border-radius: 10px; padding: 12px 14px; margin-top: 9px; font-family: "D2Coding", "Consolas", monospace; font-size: 12.8px; color: #d6deeb; white-space: pre; overflow-x: auto; line-height: 1.65; }
+    .code .label { display: block; font-family: "Pretendard", sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: var(--green); margin-bottom: 5px; }
+    .code .cmt { color: #64748b; }
+    .code .kw  { color: #38bdf8; }
+    .code .str { color: #fbbf24; }
+    .code .fn  { color: #f472b6; }
+    .code .num { color: #a78bfa; }
+
+    /* 이미지/비주얼 프롬프트 (핑크) */
+    .imgprompt { background: var(--code-bg); border: 1px solid var(--border); border-left: 3px solid var(--pink); border-radius: 10px; padding: 12px 14px; margin-top: 9px; font-family: "D2Coding", "Consolas", monospace; font-size: 12.8px; color: #cbd5e1; white-space: pre-wrap; line-height: 1.62; }
+    .imgprompt .label { display: block; font-family: "Pretendard", sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: var(--pink); margin-bottom: 5px; }
+    .imgprompt .en { color: #93c5fd; }
+    .imgprompt .key { color: #f472b6; }
+
+    /* 워크플로 */
+    .flow { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin-top: 10px; }
+    .flow .node { background: var(--card); border: 1px solid var(--border); border-radius: 9px; padding: 7px 13px; font-size: 12.8px; font-weight: 600; color: var(--text); }
+    .flow .node.on { border-color: var(--teal); color: var(--teal); }
+    .flow .arr { color: var(--text-dim); font-size: 15px; }
+
+    .tip { font-size: 12.8px; color: var(--text-dim); margin-top: 7px; }
+    .tip b { color: var(--green); }
+    .warn { color: var(--highlight); }
+
+    table.cmp { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 12.8px; }
+    table.cmp th, table.cmp td { border: 1px solid var(--border); padding: 7px 9px; text-align: left; vertical-align: top; }
+    table.cmp th { background: var(--card-2); color: #fff; font-weight: 700; }
+    table.cmp td { color: var(--text-dim); }
+    table.cmp tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
+    table.cmp code { font-family: "D2Coding", monospace; color: var(--teal); font-size: 12px; }
+    table.cmp td:first-child { color: #fff; font-weight: 600; }
+
+    .f { font-family: "D2Coding", "Consolas", monospace; font-size: 0.92em; color: var(--teal); background: rgba(45,212,191,0.08); border: 1px solid rgba(45,212,191,0.25); border-radius: 5px; padding: 1px 6px; }
+
+    .pill { display: inline-block; font-size: 11.5px; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--border); color: var(--text-dim); margin: 2px 4px 2px 0; }
+    .pill.on { color: var(--bg); background: var(--teal); border-color: var(--teal); font-weight: 700; }
+
+    .divider { justify-content: center; align-items: flex-start; }
+    .divider .big-num { font-size: clamp(60px, 12vw, 130px); font-weight: 800; line-height: 1; color: transparent; -webkit-text-stroke: 2px var(--teal); margin-bottom: 6px; }
+    .divider .part-tag { display: inline-block; font-size: 12px; font-weight: 700; letter-spacing: 0.1em; border-radius: 999px; padding: 3px 12px; margin-bottom: 12px; color: var(--teal); border: 1px solid var(--teal); }
+    .divider .part-tag.p2 { color: var(--accent); border-color: var(--accent); }
+    .divider .agenda { margin-top: 16px; display: flex; flex-wrap: wrap; gap: 7px; }
+
+    .toc { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-top: 10px; }
+    .toc li { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 11px 14px; display: flex; gap: 11px; align-items: flex-start; cursor: pointer; transition: border-color .15s ease, transform .15s ease, background .15s ease; }
+    .toc li:hover { border-color: var(--teal); transform: translateY(-2px); background: var(--card-2); }
+    .toc .n { font-size: 18px; font-weight: 800; color: var(--teal); min-width: 24px; }
+    .toc .t { font-size: 13.5px; font-weight: 700; }
+    .toc .d { font-size: 11.5px; color: var(--text-dim); margin-top: 2px; }
+    .toc .pl { font-size: 10px; color: var(--accent); font-weight: 700; letter-spacing: .05em; }
+
+    .topbar { display: flex; align-items: center; justify-content: space-between; padding: 11px clamp(18px, 5vw, 40px); border-bottom: 1px solid var(--border); background: rgba(15,23,42,0.7); backdrop-filter: blur(6px); flex-shrink: 0; }
+    .topbar .brand { font-size: 13px; font-weight: 700; color: var(--text); }
+    .topbar .brand span { color: var(--teal); }
+    .topbar .sec-label { font-size: 12.5px; color: var(--text-dim); }
+
+    .nav { display: flex; align-items: center; gap: 14px; padding: 9px clamp(18px, 5vw, 40px); border-top: 1px solid var(--border); background: rgba(15,23,42,0.7); backdrop-filter: blur(6px); flex-shrink: 0; }
+    .progress { flex: 1; height: 6px; background: var(--bg-soft); border-radius: 999px; overflow: hidden; }
+    .progress .bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent), var(--teal)); transition: width .3s ease; }
+    .counter { font-size: 13px; color: var(--text-dim); font-variant-numeric: tabular-nums; min-width: 64px; text-align: center; }
+    .navbtn { width: 38px; height: 38px; border-radius: 10px; border: 1px solid var(--border); background: var(--card); color: var(--text); font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .15s ease, border-color .15s ease, color .15s ease; }
+    .navbtn:hover { background: var(--teal); color: var(--bg); border-color: var(--teal); }
+    .navbtn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .navbtn:disabled:hover { background: var(--card); color: var(--text); border-color: var(--border); }
+    .home { font-size: 12.5px; color: var(--text-dim); text-decoration: none; }
+    .home:hover { color: var(--teal); }
+    .hint { position: fixed; bottom: 68px; left: 50%; transform: translateX(-50%); font-size: 12px; color: var(--text-dim); opacity: .7; pointer-events: none; }
+
+    @media (max-width: 720px) {
+      .grid2, .grid3, .grid4, .toc { grid-template-columns: 1fr; }
+      .slide { padding: 28px 15px 24px; }
+      .hint { display: none; }
+      .code, .prompt, .imgprompt { font-size: 11.6px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="deck">
+    <div class="topbar">
+      <div class="brand">KREMA · 생성형 AI 마케팅 기획 <span>5일차</span></div>
+      <div class="sec-label" id="secLabel">표지</div>
+    </div>
+
+    <div class="stage" id="stage">
+
+      <!-- ===== 표지 ===== -->
+      <section class="slide active" data-sec="표지">
+        <div class="slide-inner">
+          <span class="kicker">DAY 5 · 한국부동산마케팅협회</span>
+          <h1 class="title">부동산 마케터를 위한 AI 도구 활용 가이드<br/>리서치 AI 6종 & 분양 마케팅 자동화</h1>
+          <p class="sub">2026년 5월 26일(화) 10:00–17:00 · 건설회관(서울 강남)</p>
+          <div class="lead" style="margin-top:16px">
+            <b>오늘의 목표</b> — 오전엔 <strong>리서치 AI 6종</strong>으로 정보를 모으고 ‘할루시네이션’을 잡아 검증하고,
+            오후엔 <strong>Gem·AI Studio·Nano-Banana·Veo 3</strong>로 카피·비주얼·영상을 자동 생성해 <strong>통합 워크플로우</strong>로 잇습니다.
+          </div>
+          <div class="grid2" style="margin-top:16px">
+            <div class="box teal"><h3><span class="ico">🔍</span>PART 1 · 리서치·자료분석</h3><p>AI 수준 점검 → 리서치 6종 → 할루시네이션·PSK → NotebookLM</p></div>
+            <div class="box accent"><h3><span class="ico">⚙️</span>PART 2 · 자동화·실무 적용</h3><p>Gemini Gem → AI Studio → Nano-Banana·Veo 3 → 통합 워크플로우</p></div>
+          </div>
+          <div class="tip" style="margin-top:13px"><b>준비물</b> — ChatGPT·Claude·Perplexity·Gemini, 구글 계정(NotebookLM·AI Studio). 모집공고·시세 자료 있으면 실습에 활용.</div>
+        </div>
+      </section>
+
+      <!-- ===== 목차 ===== -->
+      <section class="slide" data-sec="목차">
+        <div class="slide-inner">
+          <span class="kicker">CONTENTS</span>
+          <h2 class="heading">오늘 다루는 8개 섹션 (2 PART)</h2>
+          <p class="sub">제목을 누르면 해당 섹션으로 바로 이동합니다.</p>
+          <ul class="toc" id="toc"></ul>
+        </div>
+      </section>
+
+      <!-- ===== 섹션 01 divider ===== -->
+      <section class="slide divider" data-sec="1. AI 수준 점검">
+        <div class="slide-inner">
+          <span class="part-tag">PART 1 · 리서치·자료분석</span>
+          <div class="big-num">01</div>
+          <h2 class="heading">AI 활용 수준 점검 + 왜 리서치 AI인가</h2>
+          <p class="sub">내 현재 레벨을 진단하고, 수작업 대비 AI 리서치의 가치를 체감 (1-1 ~ 1-3)</p>
+          <div class="agenda">
+            <span class="pill on">1-1 수준 체크리스트</span>
+            <span class="pill">1-2 수작업 vs AI</span>
+            <span class="pill">1-3 6가지 강점</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="1. AI 수준 점검">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">1-1</span>AI 활용 수준 체크리스트 (레벨 1~4)</h2>
+        <div class="slide-inner">
+          <p class="sub">오늘 강의에서 내가 어디서 출발하고 어디까지 갈지 자가 진단</p>
+          <table class="cmp">
+            <thead><tr><th>레벨</th><th>상태</th><th>할 수 있는 일</th></tr></thead>
+            <tbody>
+              <tr><td>Lv.1 입문</td><td>ChatGPT 경험</td><td>질문·답변, 글쓰기 보조</td></tr>
+              <tr><td>Lv.2 활용</td><td>NotebookLM 사용</td><td>내 자료 기반 분석·요약</td></tr>
+              <tr><td>Lv.3 제작</td><td>Custom GPT·Gem 제작</td><td>나만의 업무 봇 만들기</td></tr>
+              <tr><td>Lv.4 자동화</td><td>업무 워크플로 자동화</td><td>여러 AI를 잇는 파이프라인</td></tr>
+            </tbody>
+          </table>
+          <div class="lead"><b>오늘의 여정</b> — 오전(섹션1~4)에 <strong>Lv.2 리서치·검증</strong>을, 오후(섹션5~8)에 <strong>Lv.3~4 제작·자동화</strong>를 완성한다. 하루로 두 레벨 업.</div>
+          <div class="tip"><b>자가 진단</b> — 지금 내 레벨에 ✔. 강의 끝에 다시 체크해 ‘얼마나 올라갔는지’ 확인하세요.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="1. AI 수준 점검">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">1-2</span>수작업 검색 vs AI 리서치</h2>
+        <div class="slide-inner">
+          <p class="sub">같은 일, 다른 시간 — ‘경쟁 단지 5곳 조사’로 비교</p>
+          <table class="cmp">
+            <thead><tr><th>작업</th><th>수작업</th><th>AI 리서치</th></tr></thead>
+            <tbody>
+              <tr><td>경쟁 단지 5곳 정보 수집</td><td>2~3시간</td><td><strong>15~20분</strong></td></tr>
+              <tr><td>정책·법령 조사</td><td>원문 찾아 정독</td><td>요약 + 출처 + 핵심 추출</td></tr>
+              <tr><td>시장 통계 분석</td><td>엑셀 수작업</td><td>자동 집계·해석</td></tr>
+              <tr><td>출처 관리</td><td>탭 수십 개</td><td>답변에 자동 표기</td></tr>
+            </tbody>
+          </table>
+          <div class="lead"><b>핵심</b> — 절약한 시간을 ‘더 많은 검색’이 아니라 <strong>판단·전략·검증</strong>에 쓴다. 속도가 아니라 ‘일의 질’이 바뀐다.</div>
+          <div class="tip warn"><b>단, 전제</b> — AI는 빠르지만 ‘틀릴 수 있다’. 그래서 섹션 3에서 <b>할루시네이션 검증</b>을 반드시 배운다.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="1. AI 수준 점검">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">1-3</span>AI 리서치의 6가지 강점</h2>
+        <div class="slide-inner">
+          <p class="sub">왜 검색창 대신 리서치 AI인가</p>
+          <div class="grid3">
+            <div class="box teal"><h3><span class="ico">🔗</span>출처 자동 표시</h3><p>답변마다 근거 링크 → 검증 쉬움</p></div>
+            <div class="box teal"><h3><span class="ico">💬</span>후속 질문</h3><p>“더 자세히”, “비교해줘”로 파고들기</p></div>
+            <div class="box teal"><h3><span class="ico">🗂️</span>이력 보관</h3><p>대화·조사 기록을 재사용</p></div>
+            <div class="box teal"><h3><span class="ico">🕐</span>24시간 가용</h3><p>언제든, 지치지 않고</p></div>
+            <div class="box teal"><h3><span class="ico">🌐</span>교차 검증</h3><p>여러 출처를 종합·대조</p></div>
+            <div class="box teal"><h3><span class="ico">🈯</span>다국어·요약</h3><p>외국 자료도 번역·압축</p></div>
+          </div>
+          <div class="lead green"><b>섹션 1 정리</b> — 리서치 AI는 ‘빠른 검색’이 아니라 <strong>‘근거를 갖춘 조사 파트너’</strong>. 단, 강점을 살리려면 도구를 알고(섹션2) 검증을 해야(섹션3) 한다.</div>
+        </div>
+      </section>
+
+      <!-- ===== 섹션 02 divider ===== -->
+      <section class="slide divider" data-sec="2. 리서치 6종">
+        <div class="slide-inner">
+          <span class="part-tag">PART 1 · 리서치·자료분석</span>
+          <div class="big-num">02</div>
+          <h2 class="heading">리서치용 AI 도구 6종 완전정복</h2>
+          <p class="sub">도구마다 ‘잘하는 일’이 다르다 — 목적별로 골라 쓰는 법 (2-1 ~ 2-7)</p>
+          <div class="agenda">
+            <span class="pill on">2-1 Perplexity</span>
+            <span class="pill">2-2 ChatGPT</span>
+            <span class="pill">2-3 Claude</span>
+            <span class="pill">2-4 Google·Genspark·NotebookLM</span>
+            <span class="pill">2-5 Lilys·Lawbot</span>
+            <span class="pill">2-6 비교표</span>
+            <span class="pill">2-7 Deep Research</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="2. 리서치 6종">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">2-1</span>Perplexity — 출처 교차분석 검색엔진</h2>
+        <div class="slide-inner">
+          <p class="sub">‘근거가 보이는’ 검색 — 시장 동향·정책 변경 조사에 최적</p>
+          <div class="grid2">
+            <div class="box teal"><h3><span class="ico">⭐</span>강점</h3><ul><li>답변마다 <strong>출처 링크</strong>·인용</li><li>여러 출처 교차 분석</li><li>최신 웹 반영, 후속 질문</li></ul></div>
+            <div class="box"><h3><span class="ico">🎯</span>이럴 때</h3><ul><li>시장·정책 ‘근거 있는’ 조사</li><li>경쟁사·통계 빠른 확인</li><li>회의 전 5분 사전 리서치</li></ul></div>
+          </div>
+          <div class="prompt"><span class="label">프롬프트</span>2026년 수도권 분양 시장 동향과 분양가상한제 변경 사항을
+출처와 함께 정리해줘. 지역별 수치와 최근 기사 링크를 표로,
+마지막에 마케팅 시사점 3가지.</div>
+          <div class="tip"><b>Pro 팁</b> — Focus(검색 범위)·Spaces로 주제별 관리. ‘출처 클릭 → 원문 확인’ 습관이 검증의 시작.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="2. 리서치 6종">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">2-2</span>ChatGPT — 대화형 종합 분석</h2>
+        <div class="slide-inner">
+          <p class="sub">후속 질문으로 파고드는 ‘사고 파트너’ — 종합 분석·보고서 초안</p>
+          <div class="grid2">
+            <div class="box accent"><h3><span class="ico">⭐</span>강점</h3><ul><li>대화형 후속 질문·심화</li><li>분석→정리→보고서 한 흐름</li><li>도구(검색·코드·파일) 통합</li></ul></div>
+            <div class="box"><h3><span class="ico">🎯</span>이럴 때</h3><ul><li>수집한 자료 종합·해석</li><li>보고서·기획서 초안</li><li>아이디어 브레인스토밍</li></ul></div>
+          </div>
+          <div class="prompt"><span class="label">프롬프트 — 종합·후속</span>(수집한 경쟁 단지 자료 첨부) 이 자료들을 종합해
+우리 사업지 관점의 시사점을 정리해줘.
+→ 이어서: "가격 경쟁력만 더 깊게", "리스크 위주로 다시"</div>
+          <div class="tip"><b>차이</b> — Perplexity=‘찾기’, ChatGPT=‘생각·정리’. 찾은 걸 <b>해석·문서화</b>할 때 강하다.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="2. 리서치 6종">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">2-3</span>Claude — 긴 문서·정확성</h2>
+        <div class="slide-inner">
+          <p class="sub">모집공고·계약서·법령처럼 ‘길고 정확해야 하는’ 문서 검토에 강함</p>
+          <div class="grid2">
+            <div class="box purple"><h3><span class="ico">⭐</span>강점</h3><ul><li>매우 긴 문서 한 번에 분석</li><li>정확성·신중함, 글쓰기 품질</li><li>표·구조화 출력 우수</li></ul></div>
+            <div class="box"><h3><span class="ico">🎯</span>이럴 때</h3><ul><li>입주자 모집공고 정독</li><li>계약서·약관 리스크 검토</li><li>법령·규정 해석</li></ul></div>
+          </div>
+          <div class="prompt"><span class="label">프롬프트 — 모집공고 검토</span>(입주자 모집공고 PDF 첨부) 이 공고에서
+① 청약 자격·특별공급 조건 ② 일정(접수·발표·계약)
+③ 면적별 분양가 ④ 유의사항을 표로 정리하고,
+고객이 자주 오해할 포인트 5가지도 짚어줘.</div>
+          <div class="tip"><b>조합</b> — Claude로 ‘정확히 읽고’, ChatGPT로 ‘마케팅 언어로 변환’. 정확성+표현력.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="2. 리서치 6종">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">2-4</span>Google AI Search · Genspark · NotebookLM</h2>
+        <div class="slide-inner">
+          <p class="sub">검색 강화 · 팩트체크 · 내 자료 한정 학습 3종</p>
+          <div class="grid3">
+            <div class="box accent"><h3><span class="ico">🔎</span>Google AI Search</h3><p>구글 검색 + AI 요약(AI Overviews). 빠른 사실 확인</p></div>
+            <div class="box teal"><h3><span class="ico">✅</span>Genspark</h3><p>여러 소스 교차 <strong>팩트체크</strong>. 진위·신뢰도 점검</p></div>
+            <div class="box green"><h3><span class="ico">📚</span>NotebookLM</h3><p>내가 올린 자료 <strong>‘안에서만’</strong> 답변(환각 최소, 섹션 4)</p></div>
+          </div>
+          <div class="lead"><b>역할 분담</b> — 빠른 사실=Google, 진위 검증=Genspark, 내 문서 분석=NotebookLM. <strong>“검색 → 검증 → 내 자료”</strong> 3단 리서치.</div>
+          <div class="tip"><b>섹션 3·4 예고</b> — Genspark는 교차검증 워크플로(3-3), NotebookLM은 실무 실습(섹션4)에서 깊게 다룬다.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="2. 리서치 6종">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">2-5</span>보조 도구 — Lilys AI · 법제처 Lawbot</h2>
+        <div class="slide-inner">
+          <p class="sub">특정 작업을 빠르게 해치우는 ‘전문 보조’</p>
+          <div class="grid2">
+            <div class="box teal"><h3><span class="ico">🎬</span>Lilys AI</h3><p>유튜브·웹페이지 <strong>요약</strong> — 경쟁사 분양 영상·긴 기사를 3줄/타임라인으로</p></div>
+            <div class="box accent"><h3><span class="ico">⚖️</span>법제처 Lawbot</h3><p>법령 조문 <strong>빠른 검색</strong> — 주택법·청약 관련 규정 원문 확인</p></div>
+          </div>
+          <div class="prompt"><span class="label">활용 예</span>[Lilys] 이 유튜브(경쟁사 분양 설명영상) URL을 핵심 5줄과
+타임라인으로 요약해줘.
+[Lawbot] '주택공급에 관한 규칙'의 특별공급 관련 조문을 찾아줘.</div>
+          <div class="tip warn"><b>주의</b> — 법령은 개정될 수 있다. Lawbot으로 ‘조문 위치’를 찾되, 최신본·시행일은 <b>법제처 원문</b>으로 확인.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="2. 리서치 6종">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">2-6</span>6도구 한눈에 비교 + 3개만 고른다면?</h2>
+        <div class="slide-inner">
+          <p class="sub">목적별 추천 — 전부 쓸 필요 없다, 작업에 맞게</p>
+          <table class="cmp">
+            <thead><tr><th>도구</th><th>한 줄 강점</th><th>대표 용도</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Perplexity</strong></td><td>출처 기반 검색</td><td>시장·정책 조사</td></tr>
+              <tr><td><strong>ChatGPT</strong></td><td>종합·후속 분석</td><td>보고서 초안</td></tr>
+              <tr><td><strong>Claude</strong></td><td>긴 문서·정확성</td><td>공고·계약 검토</td></tr>
+              <tr><td><strong>Genspark</strong></td><td>팩트체크</td><td>진위 검증</td></tr>
+              <tr><td><strong>NotebookLM</strong></td><td>내 자료 한정</td><td>문서 분석·상담</td></tr>
+              <tr><td><strong>Lilys/Lawbot</strong></td><td>요약·법령</td><td>영상 요약·조문</td></tr>
+            </tbody>
+          </table>
+          <div class="lead green"><b>3개만 고른다면</b> — <span class="tl">빠른 검색=Perplexity</span> · <span class="tl">심층 분석=ChatGPT</span> · <span class="tl">문서 검토=Claude</span>. 여기에 NotebookLM(내 자료)을 더하면 충분.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="2. 리서치 6종">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">2-7</span>Deep Research (심층 리서치)</h2>
+        <div class="slide-inner">
+          <p class="sub">한 단계 위의 검색 — AI가 스스로 수십 출처를 조사해 ‘보고서’를 쓴다</p>
+          <div class="grid2">
+            <div class="box accent"><h3><span class="ico">🔬</span>일반 검색과 차이</h3><ul><li>다단계 자율 조사(수 분 소요)</li><li>출처 포함 장문 보고서 생성</li><li>주제·범위 구체적일수록 좋음</li></ul></div>
+            <div class="box"><h3><span class="ico">📊</span>도구별 분량</h3><ul><li>ChatGPT / Perplexity / Gemini 각각 Deep Research 지원</li><li>깊이·길이·출처 수가 다름</li></ul></div>
+          </div>
+          <div class="prompt"><span class="label">Deep Research 프롬프트</span>'2025~2026 수도권 분양 시장' 심층 보고서를 작성해줘.
+- 공급물량·청약경쟁률·미분양 추이 / 가격 / 정책 변수
+- 정부·통계·언론 등 신뢰 출처만, 인용 표기
+- 마지막에 분양 마케팅 시사점 5가지</div>
+          <div class="lead green"><b>섹션 2 정리</b> — 6종을 ‘작업별’로. 빠른 사실·심층 분석·문서 검토·팩트체크·내 자료·요약. <strong>도구를 바꾸는 게 아니라 ‘작업에 맞춰 고르는’ 안목</strong>이 실력.</div>
+        </div>
+      </section>
+
+      <!-- ===== 섹션 03 divider ===== -->
+      <section class="slide divider" data-sec="3. 할루시네이션">
+        <div class="slide-inner">
+          <span class="part-tag">PART 1 · 리서치·자료분석</span>
+          <div class="big-num">03</div>
+          <h2 class="heading">할루시네이션 다루기 + PSK 솔루션 프레임워크</h2>
+          <p class="sub">AI의 ‘그럴듯한 거짓’을 막고, 설득되는 보고서 구조로 전환 (3-1 ~ 3-6)</p>
+          <div class="agenda">
+            <span class="pill on">3-1 6가지 유형</span>
+            <span class="pill">3-2 출처 요청 6원칙</span>
+            <span class="pill">3-3 교차 검증</span>
+            <span class="pill">3-4 PSK 3단 구조</span>
+            <span class="pill">3-5 PSK 템플릿</span>
+            <span class="pill">3-6 NotebookLM×PSK</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="3. 할루시네이션">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">3-1</span>부동산 실무 할루시네이션 6가지 유형</h2>
+        <div class="slide-inner">
+          <p class="sub">AI가 ‘자신 있게 틀리는’ 부동산 특유의 함정</p>
+          <table class="cmp">
+            <thead><tr><th>유형</th><th>예시</th><th>위험</th></tr></thead>
+            <tbody>
+              <tr><td>가짜 법령 조문</td><td>없는 조항·번호 인용</td><td>법적 오안내</td></tr>
+              <tr><td>없는 통계·시세</td><td>‘평균 OO만원’ 임의 생성</td><td>잘못된 가격 전략</td></tr>
+              <tr><td>사라진 단지명</td><td>존재하지 않는 단지·위치</td><td>경쟁 분석 오류</td></tr>
+              <tr><td>잘못된 청약 자격</td><td>요건·가점 오기</td><td>고객 민원·신뢰 손상</td></tr>
+              <tr><td>오래된 정보</td><td>변경 전 정책·금리</td><td>시점 불일치</td></tr>
+              <tr><td>가짜 출처</td><td>그럴듯한 링크·기관명</td><td>검증 불가</td></tr>
+            </tbody>
+          </table>
+          <div class="lead amber"><b>핵심 인식</b> — AI는 ‘모른다’ 대신 <strong>‘그럴듯하게 지어낸다’</strong>. 특히 숫자·법령·고유명사가 위험. 외부에 나가는 정보는 반드시 사람이 검증.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="3. 할루시네이션">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">3-2</span>명확한 출처 요청 — 할루시네이션 방지 6원칙</h2>
+        <div class="slide-inner">
+          <p class="sub">프롬프트에 ‘제약’을 걸어 거짓을 줄인다 (G-1 6원칙)</p>
+          <div class="grid2">
+            <div class="box teal"><h3><span class="ico">✅</span>6원칙</h3><ul><li>① 확실한 것만 답하기</li><li>② 모르면 “모른다” 명시</li><li>③ 출처·근거 함께 제시</li><li>④ 추측은 ‘추정’ 표시</li><li>⑤ 최신성·시점 명시</li><li>⑥ 숫자·법령은 원문 확인 권고</li></ul></div>
+            <div class="box"><h3><span class="ico">🎯</span>효과</h3><p>제약을 명시하면 AI가 ‘지어내기’보다 <strong>‘유보·표시’</strong>를 택한다. 검증 대상이 줄어든다.</p></div>
+          </div>
+          <div class="prompt"><span class="label">출처 강제 프롬프트 (복붙용)</span>다음 규칙을 지켜 답해줘.
+1) 확실한 사실만, 불확실하면 "확인 필요"로 표시
+2) 모르면 모른다고, 지어내지 말 것
+3) 각 주장에 출처(기관·문서·URL) 표기
+4) 추측이 포함되면 어디가 추측인지 명시
+5) 정보의 기준 시점을 적을 것
+6) 숫자·법령·청약요건은 공식 원문 확인을 권고</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="3. 할루시네이션">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">3-3</span>교차 검증 워크플로우</h2>
+        <div class="slide-inner">
+          <p class="sub">AI 답변 → 팩트체크 → 공식 원문, 3중 확인</p>
+          <div class="flow">
+            <span class="node on">AI 1차 답변</span><span class="arr">→</span>
+            <span class="node">Genspark 팩트체크</span><span class="arr">→</span>
+            <span class="node">공식 자료 원문</span><span class="arr">→</span>
+            <span class="node">확정</span>
+          </div>
+          <div class="grid3" style="margin-top:10px">
+            <div class="box accent"><h3><span class="ico">🏠</span>청약Home</h3><p>청약 자격·일정·경쟁률</p></div>
+            <div class="box accent"><h3><span class="ico">🏛️</span>국토부</h3><p>실거래가·정책·통계</p></div>
+            <div class="box accent"><h3><span class="ico">🏗️</span>시행사 공식</h3><p>모집공고·분양가 원문</p></div>
+          </div>
+          <div class="lead green"><b>철칙</b> — <strong>숫자·법령·청약요건</strong>은 무조건 공식 원문(청약Home·국토부·시행사)으로 최종 확인. AI는 ‘찾아주는’ 역할, ‘확정’은 사람.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="3. 할루시네이션">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">3-4</span>PSK — Problem · Solution · Key result 3단 구조</h2>
+        <div class="slide-inner">
+          <p class="sub">분석을 ‘설득되는 보고서’로 — 위기 진단 → 해결책 → 정량 성과</p>
+          <div class="grid3">
+            <div class="box amber"><h3><span class="ico">P</span>Problem</h3><p>위기·문제 진단 — “미분양 OO%, 경쟁 심화”</p></div>
+            <div class="box teal"><h3><span class="ico">S</span>Solution</h3><p>패러다임 전환 해결책 — “타겟 재정의 + 채널 재배분”</p></div>
+            <div class="box green"><h3><span class="ico">K</span>Key result</h3><p>정량 KPI — “방문예약 +30%, 계약전환 +5%p”</p></div>
+          </div>
+          <div class="lead"><b>왜 PSK?</b> — 데이터 나열은 보고가 아니다. <strong>문제→해결→측정가능한 성과</strong>로 엮어야 의사결정자가 ‘설득’된다. 분양 기획에 그대로 적용.</div>
+          <div class="tip"><b>4일차 3단 구조와 차이</b> — 4일차(분석→해석→시사점)는 ‘본문 서술’ 구조, PSK는 ‘보고서 전체’의 설득 구조. 둘을 겹쳐 쓰면 강력.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="3. 할루시네이션">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">3-5</span>PSK 프롬프트 템플릿</h2>
+        <div class="slide-inner">
+          <p class="sub">Claude·ChatGPT용 — 1페이지 보고서 자동 생성</p>
+          <div class="prompt"><span class="label">PSK 1페이지 보고서 프롬프트</span>너는 부동산 분양 전략가다. 아래 자료를 'PSK 구조'로 1페이지 보고서로.
+[자료] (분석 결과·데이터 첨부)
+[구조]
+P(Problem): 핵심 문제 1~2개를 데이터로 진단
+S(Solution): 문제별 전략적 해결책(왜 효과적인지 근거)
+K(Key result): 각 해결책의 정량 KPI와 목표치(표)
+[규칙] 결론부터, 출처/추정 표시, 임원 보고 톤, 1페이지 분량</div>
+          <div class="tip"><b>활용</b> — 섹션1~2에서 모은 리서치를 이 템플릿에 넣으면 ‘조사 → 설득 보고서’가 한 번에. 프롬프트 라이브러리(4일차)에 저장 1순위.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="3. 할루시네이션">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">3-6</span>NotebookLM × PSK 결합</h2>
+        <div class="slide-inner">
+          <p class="sub">‘내 자료 기반(환각 최소)’ + ‘설득 구조(PSK)’ = 신뢰 가는 보고서</p>
+          <div class="flow">
+            <span class="node on">자료 업로드(NotebookLM)</span><span class="arr">→</span>
+            <span class="node">근거 추출·요약</span><span class="arr">→</span>
+            <span class="node">PSK 구조로 재구성</span><span class="arr">→</span>
+            <span class="node">보고서 초안</span>
+          </div>
+          <div class="prompt"><span class="label">결합 프롬프트 (NotebookLM에서)</span>업로드한 자료(시장보고서·실거래·공고)에 근거해서만,
+PSK 구조로 분양 기획 보고서 초안을 써줘.
+- P: 자료에서 도출한 문제(인용 표기)
+- S: 자료 근거 기반 해결책
+- K: 측정 가능한 KPI
+자료에 없는 내용은 '자료에 없음'으로 표시.</div>
+          <div class="lead green"><b>섹션 3 정리</b> — ① 6유형을 알고 ② 6원칙으로 막고 ③ 교차검증으로 확인 ④ PSK로 설득. <strong>‘빠르되 틀리지 않는’ 리서치</strong>가 PART 1의 핵심 역량.</div>
+        </div>
+      </section>
+
+      <!-- ===== 섹션 04 divider ===== -->
+      <section class="slide divider" data-sec="4. NotebookLM">
+        <div class="slide-inner">
+          <span class="part-tag">PART 1 · 리서치·자료분석</span>
+          <div class="big-num">04</div>
+          <h2 class="heading">NotebookLM 실무 실습</h2>
+          <p class="sub">내 자료를 올리면 ‘근거 안에서만’ 답하는 분석 도구 — 5가지 실전 (4-1 ~ 4-7)</p>
+          <div class="agenda">
+            <span class="pill on">4-1 3단계·6기능</span>
+            <span class="pill">4-2 모집공고 분석</span>
+            <span class="pill">4-3 상담 노트북</span>
+            <span class="pill">4-4 보고서 비교</span>
+            <span class="pill">4-5 회의 녹음</span>
+            <span class="pill">4-6 차트·이미지</span>
+            <span class="pill">4-7 인포그래픽·한글팁</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="4. NotebookLM">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">4-1</span>3단계 핵심 + 6가지 자동 생성 기능</h2>
+        <div class="slide-inner">
+          <p class="sub">사용은 단순, 산출물은 강력</p>
+          <div class="flow">
+            <span class="node on">① 소스 업로드</span><span class="arr">→</span>
+            <span class="node on">② 질문</span><span class="arr">→</span>
+            <span class="node on">③ 노트 저장</span>
+          </div>
+          <div class="grid3" style="margin-top:10px">
+            <div class="box teal"><h3><span class="ico">📝</span>요약</h3><p>핵심을 압축</p></div>
+            <div class="box teal"><h3><span class="ico">❓</span>FAQ</h3><p>예상 질문·답</p></div>
+            <div class="box teal"><h3><span class="ico">📅</span>타임라인</h3><p>일정·순서</p></div>
+            <div class="box teal"><h3><span class="ico">📊</span>데이터 표</h3><p>수치 구조화</p></div>
+            <div class="box teal"><h3><span class="ico">🖼️</span>인포그래픽</h3><p>시각 요약</p></div>
+            <div class="box teal"><h3><span class="ico">🎧</span>팟캐스트</h3><p>오디오 대담</p></div>
+          </div>
+          <div class="lead"><b>핵심 가치</b> — 업로드한 <strong>‘소스 안에서만’</strong> 답하고 인용 위치를 표시 → 할루시네이션 최소. 부동산 ‘공식 문서’ 분석에 최적.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="4. NotebookLM">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">4-2</span>실습 1 — 입주자 모집공고 자동 분석</h2>
+        <div class="slide-inner">
+          <p class="sub">수십 페이지 공고에서 핵심을 표로 자동 추출</p>
+          <div class="steps">
+            <li>입주자 모집공고 PDF를 소스로 업로드</li>
+            <li>아래 프롬프트로 핵심 표 생성</li>
+            <li>인용(근거 위치) 확인 → 노트 저장</li>
+          </div>
+          <div class="prompt"><span class="label">프롬프트</span>이 모집공고에서 다음을 표로 정리해줘(근거 위치 표시).
+① 청약 자격(일반/특별공급별 요건)
+② 특별공급 유형·물량
+③ 일정(접수·발표·계약·입주)
+④ 면적별 분양가·세대수
+⑤ 유의사항·제한</div>
+          <div class="lead green"><b>효과</b> — 상담사가 매번 공고를 뒤지지 않아도, ‘질문하면 답하는’ 공고 분석본 완성. 4-3 상담 노트북으로 발전.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="4. NotebookLM">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">4-3</span>실습 2 — 청약 상담 노트북 구성</h2>
+        <div class="slide-inner">
+          <p class="sub">FAQ·청약 자격·시세 자료를 통합해 ‘상담 챗봇’처럼</p>
+          <div class="grid2">
+            <div class="box accent"><h3><span class="ico">📥</span>소스 구성</h3><ul><li>모집공고(4-2)</li><li>청약 자격 안내·FAQ</li><li>주변 시세·실거래 자료</li></ul></div>
+            <div class="box teal"><h3><span class="ico">💬</span>활용</h3><ul><li>“생애최초 자격 되나요?”</li><li>“특공 일정 언제?”</li><li>근거 인용과 함께 답변</li></ul></div>
+          </div>
+          <div class="prompt"><span class="label">상담 응대 프롬프트</span>너는 이 단지의 청약 상담사다. 업로드된 자료에 근거해서만 답하고,
+근거 위치를 표시해. 자료에 없으면 "공식 확인 필요"라고 안내.
+고객 질문: "39세 무주택, 생애최초 특별공급 가능한가요?"</div>
+          <div class="tip warn"><b>주의</b> — 최종 자격·당첨은 청약Home 공식 기준. 상담 노트북은 ‘1차 안내’, 확정은 공식 확인 안내를 항상 병기.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="4. NotebookLM">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">4-4</span>실습 3 — 시장 분석 보고서 비교</h2>
+        <div class="slide-inner">
+          <p class="sub">여러 기관 보고서를 동시에 올려 공통점·차이를 자동 정리</p>
+          <div class="steps">
+            <li>KB·우리은행·국토연구원 등 보고서 동시 업로드</li>
+            <li>공통/상이 지점 비교 요청</li>
+            <li>우리 사업지 관점 시사점 도출</li>
+          </div>
+          <div class="prompt"><span class="label">프롬프트</span>업로드한 3개 기관 보고서를 비교해줘.
+① 공통적으로 말하는 전망 ② 기관별로 엇갈리는 지점과 이유
+③ 수치 차이(가격·공급·금리 전망)를 표로
+④ 우리 분양 사업에 주는 시사점. 각 항목 출처(기관) 표기.</div>
+          <div class="tip"><b>강점</b> — 한 기관만 보면 편향된다. 여러 보고서를 <b>교차</b>하면 ‘합의된 전망’과 ‘이견’이 보여 더 균형 잡힌 판단.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="4. NotebookLM">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">4-5</span>실습 4 — 회의 녹음 분석 (모바일 활용)</h2>
+        <div class="slide-inner">
+          <p class="sub">현장 미팅 녹음 → 결정사항·후속 액션·미해결 이슈 자동 추출</p>
+          <div class="steps pink">
+            <li>현장/모델하우스 미팅을 모바일로 녹음</li>
+            <li>음성 파일을 소스로 업로드</li>
+            <li>회의록·액션아이템 자동 생성</li>
+          </div>
+          <div class="prompt"><span class="label">프롬프트</span>이 회의 녹음을 분석해서 정리해줘.
+① 핵심 결정사항 ② 후속 액션(담당·기한)
+③ 미해결 이슈·재논의 필요 항목
+④ 3줄 요약. 표로 깔끔하게.</div>
+          <div class="lead green"><b>효과</b> — 받아쓰기·정리에 쓰던 시간을 0으로. 회의 직후 ‘정리된 회의록’이 자동으로. (1일차 회의록 실습의 고도화)</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="4. NotebookLM">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">4-6</span>실습 5 — 부동산 차트·이미지 분석</h2>
+        <div class="slide-inner">
+          <p class="sub">시세 그래프·평면도·인포그래픽을 텍스트 데이터로 변환</p>
+          <div class="grid3">
+            <div class="box accent"><h3><span class="ico">📈</span>시세 그래프</h3><p>추세·변곡점을 수치·문장으로</p></div>
+            <div class="box accent"><h3><span class="ico">📐</span>평면도</h3><p>구조·면적·동선 설명 추출</p></div>
+            <div class="box accent"><h3><span class="ico">🗺️</span>인포그래픽</h3><p>입지·교통 정보 텍스트화</p></div>
+          </div>
+          <div class="prompt"><span class="label">프롬프트</span>이 시세 그래프 이미지를 분석해줘.
+① 기간별 추세(상승/하락 구간) ② 주요 변곡점과 추정 원인
+③ 표로 수치화 ④ 우리 분양가 책정에 주는 시사점.</div>
+          <div class="tip"><b>멀티모달</b> — 텍스트만이 아니라 ‘이미지 속 정보’도 데이터가 된다. 캡처 한 장이 분석 대상.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="4. NotebookLM">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">4-7</span>스튜디오 인포그래픽 + 글자 깨짐 수정 팁</h2>
+        <div class="slide-inner">
+          <p class="sub">자동 생성 인포그래픽의 한글 폰트 깨짐을 해결하는 워크플로</p>
+          <div class="grid2">
+            <div class="box teal"><h3><span class="ico">🖼️</span>스튜디오 인포그래픽</h3><p>분석 결과를 한 장 비주얼로 자동 생성 — 보고·공유에 즉시</p></div>
+            <div class="box amber"><h3><span class="ico">🇰🇷</span>한글 깨짐 해결</h3><ul><li>한글 폰트 명시/임베드</li><li>핵심 텍스트는 편집 단계에서 재입력</li><li>영문 라벨 → 한글로 후수정</li></ul></div>
+          </div>
+          <div class="lead green"><b>섹션 4 정리</b> — 모집공고·상담·보고서·녹음·차트까지, NotebookLM 하나로 ‘내 자료 분석’ 끝. <strong>PART 1(리서치·검증)을 마치고, 이제 PART 2(자동화·제작)로</strong>.</div>
+        </div>
+      </section>
+
+      <!-- ===== 섹션 05 divider ===== -->
+      <section class="slide divider" data-sec="5. Gemini Gem">
+        <div class="slide-inner">
+          <span class="part-tag p2">PART 2 · 자동화·실무 적용</span>
+          <div class="big-num">05</div>
+          <h2 class="heading">Gemini Gem — 나만의 맞춤형 AI 비서 4종</h2>
+          <p class="sub">구글 워크스페이스와 연동되는 ‘전용 비서’를 만들어 업무에 박제 (5-1 ~ 5-8)</p>
+          <div class="agenda">
+            <span class="pill on">5-1 Gem vs GPTs vs Projects</span>
+            <span class="pill">5-2 지침 작성(TCR)</span>
+            <span class="pill">5-3 Gmail·Docs·Sheets</span>
+            <span class="pill">5-4 상담 Gem</span>
+            <span class="pill">5-5 시각화 Gem</span>
+            <span class="pill">5-6 경쟁비교 Gem</span>
+            <span class="pill">5-7 카피검수 Gem</span>
+            <span class="pill">5-8 보안·사례</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="5. Gemini Gem">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">5-1</span>Gems vs GPTs vs Claude Projects</h2>
+        <div class="slide-inner">
+          <p class="sub">3대 맞춤형 AI 플랫폼 — 무엇이 다른가</p>
+          <table class="cmp">
+            <thead><tr><th>구분</th><th>Gemini Gems</th><th>ChatGPT GPTs</th><th>Claude Projects</th></tr></thead>
+            <tbody>
+              <tr><td>제작사</td><td>Google</td><td>OpenAI</td><td>Anthropic</td></tr>
+              <tr><td>강점</td><td><strong>워크스페이스 연동</strong></td><td>생태계·Actions</td><td>긴 문서·정확성</td></tr>
+              <tr><td>연동</td><td>Gmail·Docs·Sheets·Drive</td><td>외부 API</td><td>프로젝트 지식</td></tr>
+              <tr><td>이럴 때</td><td>구글 환경 업무</td><td>외부 도구 연결</td><td>문서 중심 작업</td></tr>
+            </tbody>
+          </table>
+          <div class="lead"><b>Gem의 결정적 강점</b> — <strong>구글 워크스페이스 네이티브 연동</strong>. Gmail·시트·문서를 오가는 업무라면 Gem이 가장 매끄럽다.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="5. Gemini Gem">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">5-2</span>좋은 Gem 지침 작성법 — TCR 3요소</h2>
+        <div class="slide-inner">
+          <p class="sub">Task(역할) · Context(배경) · Reference(참고자료)</p>
+          <div class="grid3">
+            <div class="box teal"><h3><span class="ico">T</span>Task</h3><p>무엇을 하는 비서인가 — 역할·임무·출력 형식</p></div>
+            <div class="box teal"><h3><span class="ico">C</span>Context</h3><p>배경 — 회사·단지·타겟·규칙·말투</p></div>
+            <div class="box teal"><h3><span class="ico">R</span>Reference</h3><p>참고자료 — 공고·FAQ·시세 등 첨부 지식</p></div>
+          </div>
+          <div class="code"><span class="label">Gem 지침 예시 (TCR)</span><span class="cmt"># Task</span>
+너는 OO단지 청약 상담 비서다. 고객 질문에 정확·친절하게 답한다.
+<span class="cmt"># Context</span>
+- 타겟: 3040 실수요 / 톤: 신뢰감 있게, 결론부터
+- 확정 정보는 청약Home 확인을 항상 안내
+<span class="cmt"># Reference</span>
+- 첨부된 모집공고·청약 FAQ·시세 자료 '안에서만' 답한다
+- 자료에 없으면 "공식 확인 필요"로 안내</div>
+          <div class="tip"><b>핵심</b> — 1·2일차의 ‘역할·맥락·형식’ 원리와 동일. Gem은 이 지침을 <b>고정 저장</b>해 매번 반복하지 않는다.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="5. Gemini Gem">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">5-3</span>Gmail · Docs · Sheets 연동</h2>
+        <div class="slide-inner">
+          <p class="sub">Gem이 내 구글 도구를 직접 ‘읽고 쓰는’ 자동화</p>
+          <div class="grid3">
+            <div class="box accent"><h3><span class="ico">📧</span>Gmail</h3><p>문의 메일 자동 분류·우선순위·초안 답장</p></div>
+            <div class="box accent"><h3><span class="ico">📄</span>Docs</h3><p>보고서·제안서 자동 작성·요약</p></div>
+            <div class="box accent"><h3><span class="ico">📊</span>Sheets</h3><p>시트 데이터 직접 분석·차트·인사이트</p></div>
+          </div>
+          <div class="prompt"><span class="label">연동 활용 예</span>[Gmail] 오늘 받은 분양 문의 메일을 '청약자격/가격/일정/기타'로
+        분류하고, 각 유형별 답장 초안을 만들어줘.
+[Sheets] '상담일지' 시트를 분석해 이번 주 문의 Top5 주제와
+        전환율을 표로.</div>
+          <div class="tip warn"><b>권한</b> — 연동 시 데이터 접근 권한을 부여하게 된다. 범위를 확인하고, 민감 메일·시트는 신중히.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="5. Gemini Gem">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">5-4</span>실습 1 — 청약 상담 Gem</h2>
+        <div class="slide-inner">
+          <p class="sub">FAQ·청약 자격·시세를 통합해 1:1 상담 자동 응대</p>
+          <div class="flow">
+            <span class="node on">자료 첨부</span><span class="arr">→</span>
+            <span class="node">TCR 지침</span><span class="arr">→</span>
+            <span class="node">상담 응대 테스트</span><span class="arr">→</span>
+            <span class="node">팀 공유</span>
+          </div>
+          <div class="prompt"><span class="label">Gem 지침 핵심</span>[Task] 청약 상담 응대 / [Context] 친절·정확, 확정은 공식 확인 안내
+[Reference] 모집공고·청약 FAQ·주변 시세
+- 답변은 '결론 → 근거(인용) → 다음 안내' 순
+- 자격 판단은 '일반적 기준'임을 명시</div>
+          <div class="tip"><b>NotebookLM 상담 노트북(4-3)과 차이</b> — NotebookLM=분석·조회 중심, Gem=‘응대 비서’로 톤·흐름까지 고정. 둘을 함께 쓰면 강력.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="5. Gemini Gem">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">5-5</span>실습 2 — 데이터 시각화 Gem</h2>
+        <div class="slide-inner">
+          <p class="sub">분양 마케팅 엑셀을 넣으면 차트·인사이트 자동 생성</p>
+          <div class="prompt"><span class="label">Gem 지침</span>[Task] 마케팅 데이터를 분석해 차트와 인사이트를 만든다.
+[Context] 부동산 분양 마케팅(광고 성과·방문·계약 데이터)
+[출력] ① 핵심 지표 요약 ② 추세·이상치 ③ 보고서용 차트
+④ '그래서 무엇을' 액션 3가지. 한글 라벨, 깨짐 없이.</div>
+          <div class="grid2">
+            <div class="box teal"><h3><span class="ico">📊</span>입력</h3><p>광고비·노출·클릭·방문·계약 시트</p></div>
+            <div class="box teal"><h3><span class="ico">💡</span>출력</h3><p>KPI·추세 차트·예산 재배분 제안</p></div>
+          </div>
+          <div class="tip"><b>연결</b> — 4일차 데이터 분석을 ‘매번 프롬프트’ 대신 <b>전용 Gem</b>으로. 시트만 바꿔 넣으면 끝.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="5. Gemini Gem">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">5-6</span>실습 3 — 경쟁 단지 비교 Gem</h2>
+        <div class="slide-inner">
+          <p class="sub">자사 vs 경쟁을 4축(입지·상품·가격·타겟)으로 자동 비교표</p>
+          <div class="prompt"><span class="label">Gem 지침</span>[Task] 입력된 자사·경쟁 단지 정보를 4축으로 비교한다.
+[축] 입지 / 상품(평면·옵션) / 가격(3.3㎡당) / 타겟
+[출력] ① 4축 비교표 ② 자사 우위/열위 ③ '이길 수 있는 포인트'
+④ 차별화 메시지 제안. 근거 표시, 추정은 표시.</div>
+          <div class="lead"><b>자동화 가치</b> — 신규 경쟁 단지가 뜰 때마다 정보만 넣으면 비교표 완성. 4일차 ‘경쟁 비교’를 <strong>반복 가능한 Gem</strong>으로.</div>
+          <div class="tip"><b>입력 소스</b> — 6-2(AI Studio JSON 추출)로 경쟁 홈페이지를 구조화 데이터로 만들어 이 Gem에 넣으면 완전 자동.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="5. Gemini Gem">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">5-7</span>실습 4 — 분양 카피 검수 Gem</h2>
+        <div class="slide-inner">
+          <p class="sub">광고법·표시광고법 위반을 자동 점검하고 수정안 제시</p>
+          <div class="grid2">
+            <div class="box amber"><h3><span class="ico">⚖️</span>점검 항목</h3><ul><li>과장·허위(확정 수익·최고 등)</li><li>객관적 근거 없는 단정</li><li>필수 고지 누락</li></ul></div>
+            <div class="box teal"><h3><span class="ico">🛠️</span>출력</h3><ul><li>위반 가능 문구 표시</li><li>사유·근거</li><li>수정안 3종</li></ul></div>
+          </div>
+          <div class="prompt"><span class="label">Gem 지침</span>[Task] 분양 광고 카피의 표시광고법·광고법 리스크를 점검한다.
+[규칙] ① 과장·허위·기만 소지 표시 ② 근거 필요한 단정 표시
+③ 위반 문구별 '안전한 대체 표현' 3개 제안
+④ 단, 최종 법적 판단은 전문가 검토 필요함을 명시.</div>
+          <div class="tip warn"><b>중요</b> — AI 점검은 ‘1차 필터’. 분양 광고는 법적 리스크가 크므로 <b>최종은 법무·전문가 검토</b> 필수.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="5. Gemini Gem">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">5-8</span>Gem 보안 가드레일 + 활용 사례 5종</h2>
+        <div class="slide-inner">
+          <p class="sub">안전하게 — 개인정보·API Key 보호 + 실무 사례</p>
+          <div class="grid2">
+            <div class="box amber"><h3><span class="ico">🔐</span>보안 가드레일</h3><ul><li>지침에 ‘민감정보 요청 거부’ 명시</li><li>API Key·고객정보 미저장</li><li>연동 권한 최소화</li></ul></div>
+            <div class="box teal"><h3><span class="ico">💼</span>활용 사례 5종</h3><ul><li>상담 응대 / 데이터 시각화</li><li>경쟁 비교 / 카피 검수</li><li>메일 분류·답장 초안</li></ul></div>
+          </div>
+          <div class="lead green"><b>섹션 5 정리</b> — TCR로 지침을 짜고, 구글 연동으로 힘을 더하고, 보안 가드레일로 안전하게. <strong>업무별 전용 Gem 4종</strong>이면 일상이 자동화된다.</div>
+        </div>
+      </section>
+
+      <!-- ===== 섹션 06 divider ===== -->
+      <section class="slide divider" data-sec="6. AI Studio">
+        <div class="slide-inner">
+          <span class="part-tag p2">PART 2 · 자동화·실무 적용</span>
+          <div class="big-num">06</div>
+          <h2 class="heading">Google AI Studio — 멀티모달 자동화 + 노코드 앱</h2>
+          <p class="sub">URL·이미지·영상을 입력으로, 구조화 데이터·카피·앱을 산출 (6-1 ~ 6-8)</p>
+          <div class="agenda">
+            <span class="pill on">6-1 3대 인터페이스</span>
+            <span class="pill">6-2 홈페이지→JSON</span>
+            <span class="pill">6-3 카피 9개</span>
+            <span class="pill">6-4 유튜브 분석</span>
+            <span class="pill">6-5 자연어 앱</span>
+            <span class="pill">6-6 SVG 차트</span>
+            <span class="pill">6-7 차트빌더 앱</span>
+            <span class="pill">6-8 다국어</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="6. AI Studio">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">6-1</span>3가지 핵심 인터페이스</h2>
+        <div class="slide-inner">
+          <p class="sub">Studio · Playground · Build — 무엇을 어디서</p>
+          <table class="cmp">
+            <thead><tr><th>인터페이스</th><th>역할</th><th>이럴 때</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Playground</strong></td><td>프롬프트 실험</td><td>모델·옵션 테스트, 단발 작업</td></tr>
+              <tr><td><strong>Build</strong></td><td>앱 제작</td><td>자연어로 작동 앱 생성(6-5·6-7)</td></tr>
+              <tr><td><strong>Run Settings</strong></td><td>세부 옵션</td><td>모델·temperature·출력 제어</td></tr>
+            </tbody>
+          </table>
+          <div class="grid2" style="margin-top:8px">
+            <div class="box teal"><h3><span class="ico">🎛️</span>Run Settings 핵심</h3><ul><li>모델 선택(Gemini 계열)</li><li>Temperature(창의성↔일관성)</li><li>출력 형식(JSON 등)</li></ul></div>
+            <div class="box"><h3><span class="ico">🖼️</span>멀티모달 입력</h3><ul><li>텍스트·이미지·URL·영상</li><li>여러 입력 동시 처리</li></ul></div>
+          </div>
+          <div class="tip"><b>Tip</b> — 일관성 필요(데이터 추출)=Temperature 낮게, 아이디어(카피)=높게.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="6. AI Studio">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">6-2</span>실습 1 — 경쟁 홈페이지 → JSON 추출</h2>
+        <div class="slide-inner">
+          <p class="sub">URL·캡처를 넣으면 ‘구조화 데이터(JSON)’로 — 엑셀 비교표 자동화</p>
+          <div class="code"><span class="label">출력 JSON 스키마 예시</span>{
+  <span class="str">"단지명"</span>: <span class="str">"..."</span>,
+  <span class="str">"위치"</span>: <span class="str">"..."</span>,
+  <span class="str">"세대수"</span>: <span class="num">0</span>,
+  <span class="str">"평형"</span>: [<span class="str">"59A"</span>, <span class="str">"84A"</span>],
+  <span class="str">"분양가_3.3㎡"</span>: <span class="num">0</span>,
+  <span class="str">"입주예정"</span>: <span class="str">"YYYY-MM"</span>,
+  <span class="str">"강점"</span>: [<span class="str">"역세권"</span>, <span class="str">"학군"</span>]
+}</div>
+          <div class="prompt"><span class="label">프롬프트</span>이 경쟁 단지 홈페이지(URL/캡처)에서 단지명·위치·세대수·평형·
+분양가·입주예정·강점을 추출해 위 JSON 형식으로 만들어줘.
+여러 단지면 배열로. 없는 값은 null.</div>
+          <div class="tip"><b>자동화 핵심</b> — JSON으로 받으면 엑셀·시트·Gem(5-6)에 바로 투입. ‘웹 → 구조화 데이터 → 비교표’가 한 줄로.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="6. AI Studio">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">6-3</span>실습 2 — 매체별 광고 카피 9개 자동 생성</h2>
+        <div class="slide-inner">
+          <p class="sub">3매체 × 3안 = 9개를 한 번에 (인스타·페이스북·네이버·유튜브)</p>
+          <table class="cmp">
+            <thead><tr><th>매체</th><th>톤</th><th>형식</th></tr></thead>
+            <tbody>
+              <tr><td>인스타·숏츠</td><td>감성·트렌디</td><td>짧은 후킹 + 자막</td></tr>
+              <tr><td>페이스북·네이버</td><td>정보·신뢰</td><td>혜택·조건 명시</td></tr>
+              <tr><td>유튜브</td><td>스토리·설명</td><td>오프닝 + 본문</td></tr>
+            </tbody>
+          </table>
+          <div class="prompt"><span class="label">프롬프트</span>이 단지(첨부 정보) 광고 카피를 매체별로 만들어줘.
+인스타/페이스북/유튜브 각 3안(A 감성·B 정보·C 희소성).
+매체 톤에 맞게, 표(매체·안·카피·CTA)로 9개. 과장 표현 배제.</div>
+          <div class="tip"><b>연결</b> — 4일차 A/B 카피를 ‘매체×안’ 매트릭스로 확장. 5-7 카피 검수 Gem으로 바로 점검까지.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="6. AI Studio">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">6-4</span>실습 3 — 유튜브 영상 분석</h2>
+        <div class="slide-inner">
+          <p class="sub">경쟁사 분양 영상 URL → 대본·스토리·벤치마킹 포인트 추출</p>
+          <div class="prompt"><span class="label">프롬프트</span>이 경쟁사 분양 홍보영상(URL)을 분석해줘.
+① 전체 대본/나레이션 요약 ② 스토리 구조(기-승-전-결)
+③ 강조한 셀링포인트 ④ 영상 톤·연출 특징
+⑤ 우리가 벤치마킹할 점 3가지 + 차별화할 점 2가지</div>
+          <div class="grid2">
+            <div class="box teal"><h3><span class="ico">🔍</span>얻는 것</h3><p>경쟁사 메시지 전략을 ‘분해’해서 학습</p></div>
+            <div class="box accent"><h3><span class="ico">🎬</span>활용</h3><p>3일차 스토리보드 제작의 ‘레퍼런스’로</p></div>
+          </div>
+          <div class="tip"><b>멀티모달의 힘</b> — 영상을 ‘보고’ 분석. Lilys(요약)보다 깊은 ‘전략 분해’가 가능.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="6. AI Studio">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">6-5</span>자연어로 앱 만들기 (바이브 코딩)</h2>
+        <div class="slide-inner">
+          <p class="sub">“이런 기능 만들어줘” 한 줄 → 작동하는 웹 앱 즉시 생성</p>
+          <div class="flow">
+            <span class="node on">자연어 요청</span><span class="arr">→</span>
+            <span class="node">Build가 앱 생성</span><span class="arr">→</span>
+            <span class="node">미리보기·수정</span><span class="arr">→</span>
+            <span class="node">저장·공유</span>
+          </div>
+          <div class="prompt"><span class="label">Build 프롬프트 예시</span>분양 수익률 간이 계산기 웹앱을 만들어줘.
+- 입력: 매수가·전세가·보유기간·예상 상승률
+- 출력: 예상 수익·수익률·연환산, 막대 차트
+- 깔끔한 카드 UI, 모바일 대응</div>
+          <div class="tip"><b>Gallery</b> — 다른 사람이 만든 앱 예시를 둘러보며 아이디어·프롬프트를 참고. ‘좋은 예시 변형’이 가장 빠른 학습.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="6. AI Studio">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">6-6</span>SVG 차트 빌더 — PPT 편집 가능한 시각화</h2>
+        <div class="slide-inner">
+          <p class="sub">데이터 입력 → SVG 도표 자동 생성 → PPT에 붙여 색·텍스트 수정</p>
+          <div class="grid2">
+            <div class="box teal"><h3><span class="ico">🎨</span>왜 SVG?</h3><ul><li>벡터라 확대해도 안 깨짐</li><li>PPT에서 <strong>직접 편집</strong>(색·글자)</li><li>인쇄·대형 출력에도 선명</li></ul></div>
+            <div class="box"><h3><span class="ico">📊</span>활용</h3><ul><li>분양 실적·경쟁 비교 도표</li><li>보고서·제안서 인포그래픽</li><li>브랜드 색으로 일관화</li></ul></div>
+          </div>
+          <div class="prompt"><span class="label">프롬프트</span>아래 분기별 분양 실적 데이터로 SVG 막대+선 혼합 차트를 만들어줘.
+한글 라벨, 브랜드 컬러(#2dd4bf), PPT에서 편집 가능한 깔끔한 구조.
+[데이터] (붙여넣기)</div>
+          <div class="tip"><b>이미지 차트와 차이</b> — PNG는 수정 불가, SVG는 ‘도형’이라 PPT에서 글자·색을 바로 고친다.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="6. AI Studio">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">6-7</span>Build로 ‘SVG 차트 빌더 앱’ 자체 만들기</h2>
+        <div class="slide-inner">
+          <p class="sub">3개 프롬프트로 ‘내 전용 차트 생성기’를 완성</p>
+          <div class="steps">
+            <li><strong>골격</strong> — “데이터 입력하면 SVG 차트 나오는 웹앱 만들어줘”</li>
+            <li><strong>옵션</strong> — “차트 종류(막대·선·원) 선택, 색상 지정 추가”</li>
+            <li><strong>내보내기</strong> — “SVG 다운로드·복사 버튼 추가”</li>
+          </div>
+          <div class="lead"><b>Claude vs AI Studio 분담</b> — 복잡한 ‘다이어그램·로직’은 Claude(긴 코드·정확), ‘빠른 멀티모달·구글 연동’은 AI Studio. 도구를 역할로 나눈다.</div>
+          <div class="tip"><b>의미</b> — 한 번 만든 앱은 ‘재사용 자산’. 매번 프롬프트 대신 <b>전용 도구</b>를 소유한다(4일차 Agent 철학).</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="6. AI Studio">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">6-8</span>Global Kit Generator &amp; Localizer</h2>
+        <div class="slide-inner">
+          <p class="sub">다국어 광고 자동 변환 — 외국인 투자자 대상 마케팅</p>
+          <div class="grid3">
+            <div class="box accent"><h3><span class="ico">🌏</span>다국어 변환</h3><p>한 카피를 영·중·일 등으로 ‘현지 톤’ 변환</p></div>
+            <div class="box teal"><h3><span class="ico">🧭</span>현지화(Localize)</h3><p>단순 번역이 아닌 문화·표현 맞춤</p></div>
+            <div class="box"><h3><span class="ico">🏢</span>활용</h3><p>외국인 투자자·글로벌 분양 홍보</p></div>
+          </div>
+          <div class="prompt"><span class="label">프롬프트</span>이 분양 광고 카피를 영어·중국어·일본어로 현지화해줘.
+직역이 아니라 각 언어권 정서에 맞게, 핵심 메시지·CTA 유지.
+부동산 용어는 현지 관행에 맞춰, 표(언어·카피·주의점)로.</div>
+          <div class="lead green"><b>섹션 6 정리</b> — JSON 추출·카피 9개·영상 분석·앱 제작·SVG·다국어. <strong>AI Studio 하나로 ‘멀티모달 자동화 공장’</strong>을 갖춘다.</div>
+        </div>
+      </section>
+
+      <!-- ===== 섹션 07 divider ===== -->
+      <section class="slide divider" data-sec="7. Nano-Banana·Veo">
+        <div class="slide-inner">
+          <span class="part-tag p2">PART 2 · 자동화·실무 적용</span>
+          <div class="big-num">07</div>
+          <h2 class="heading">Nano-Banana · Veo 3 — 비주얼·영상 생성</h2>
+          <p class="sub">분양 홍보용 이미지·영상을 즉석에서 — 평면도 3D화부터 보이스 도슨트까지 (7-1 ~ 7-6)</p>
+          <div class="agenda">
+            <span class="pill on">7-1 접속·프롬프트 주의</span>
+            <span class="pill">7-2 비주얼 5종</span>
+            <span class="pill">7-3 모델 비교·Verify</span>
+            <span class="pill">7-4 →Veo 3 영상</span>
+            <span class="pill">7-5 Veo 3 Lite</span>
+            <span class="pill">7-6 브로셔·도슨트</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="7. Nano-Banana·Veo">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">7-1</span>접속 방법 3가지 + 프롬프트 주의사항</h2>
+        <div class="slide-inner">
+          <p class="sub">어디서 쓰나, 그리고 한글 프롬프트 안정성 팁</p>
+          <div class="grid3">
+            <div class="box teal"><h3><span class="ico">📱</span>Gemini 앱</h3><p>가장 쉬움 — 대화로 바로 이미지</p></div>
+            <div class="box teal"><h3><span class="ico">🧪</span>AI Studio</h3><p>옵션 제어·멀티모달 결합</p></div>
+            <div class="box teal"><h3><span class="ico">🔌</span>API 호출</h3><p>대량·자동화(개발 연동)</p></div>
+          </div>
+          <div class="box amber" style="margin-top:8px"><h3><span class="ico">🇰🇷</span>한글 프롬프트 팁</h3><ul><li>핵심 키워드는 <strong>영어 병기</strong>가 안정적</li><li>긴 한글 문장보다 ‘요소 나열’</li><li>화면 ‘글자 삽입’은 약하므로 후편집</li></ul></div>
+          <div class="tip warn"><b>저작권·초상권</b> — 실존 인물·타 브랜드 모방 금지. 상업 사용 전 라이선스 확인, ‘AI 생성’ 고지 권장(3일차 원칙 동일).</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="7. Nano-Banana·Veo">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">7-2</span>분양 홍보용 비주얼 생성 5종</h2>
+        <div class="slide-inner">
+          <p class="sub">강의 실제 시연 — 부동산에 바로 쓰는 5가지 편집</p>
+          <div class="grid3">
+            <div class="box pink"><h3><span class="ico">📐→🏠</span>① 평면도→3D</h3><p>2D 평면도를 3D 렌더링으로</p></div>
+            <div class="box pink"><h3><span class="ico">🔄</span>② 외관 시점 변경</h3><p>같은 건물 다른 앵글</p></div>
+            <div class="box pink"><h3><span class="ico">🛋️</span>③ 인테리어 가구 배치</h3><p>빈 공간에 가구·스타일링</p></div>
+            <div class="box pink"><h3><span class="ico">🍂</span>④ 계절·기후 변환</h3><p>봄·여름·야경 등 분위기</p></div>
+            <div class="box pink"><h3><span class="ico">🧍</span>⑤ 인물 합성</h3><p>모델·가족 자연스럽게</p></div>
+          </div>
+          <div class="imgprompt"><span class="label">예시 — 평면도 → 3D 렌더링</span><span class="ko">[업로드] 84㎡ 평면도
+[지시] 이 평면도를 사실적인 3D 인테리어 렌더링으로.
+       남향 거실 햇살, 우드+화이트 톤, 가구 배치 포함,
+       photorealistic, 16:9. 구조·치수는 평면도와 일치.</span></div>
+          <div class="tip"><b>강점</b> — Nano-Banana는 ‘편집·합성’에 강하다(3일차). 모델하우스 촬영 전 시안을 즉석에서.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="7. Nano-Banana·Veo">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">7-3</span>이미지 AI 모델 비교 + Verify AI</h2>
+        <div class="slide-inner">
+          <p class="sub">ChatGPT 이미지 2.0 vs Nano-Banana, 그리고 AI 판별</p>
+          <table class="cmp">
+            <thead><tr><th>구분</th><th>ChatGPT 이미지</th><th>Nano-Banana</th></tr></thead>
+            <tbody>
+              <tr><td>강점</td><td>창작·일관성·대화 수정</td><td>편집·합성·정밀 변경</td></tr>
+              <tr><td>한글 프롬프트</td><td>양호</td><td>키워드 영어 병기 권장</td></tr>
+              <tr><td>이럴 때</td><td>새 컨셉 이미지</td><td>기존 이미지 변형·합성</td></tr>
+            </tbody>
+          </table>
+          <div class="box amber" style="margin-top:8px"><h3><span class="ico">🔎</span>Verify AI — 생성물 판별</h3><p>이미지가 ‘AI 생성인지’ 판별하는 도구. 경쟁사·제보 콘텐츠 진위 확인, 우리 콘텐츠 고지 판단에 참고.</p></div>
+          <div class="tip"><b>전략</b> — ‘새로 만들기’는 ChatGPT, ‘고치기·합성’은 Nano-Banana. 작업에 맞춰.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="7. Nano-Banana·Veo">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">7-4</span>Nano-Banana → Veo 3 워크플로우</h2>
+        <div class="slide-inner">
+          <p class="sub">이미지 생성 → 영상 변환 → SNS 숏폼 즉시 활용</p>
+          <div class="flow">
+            <span class="node on">Nano-Banana 이미지</span><span class="arr">→</span>
+            <span class="node">Veo 3 영상 변환</span><span class="arr">→</span>
+            <span class="node">자막·BGM</span><span class="arr">→</span>
+            <span class="node">SNS 숏폼</span>
+          </div>
+          <div class="imgprompt"><span class="label">Veo 3 모션 프롬프트</span><span class="en">From this still (apartment living room):
+<span class="key">slow cinematic push-in</span>, warm sunlight shifting,
+subtle curtain movement, <span class="key">5 seconds</span>, 9:16 for shorts</span></div>
+          <div class="lead"><b>풀 파이프라인</b> — 평면도(7-2) → 3D 이미지 → Veo 영상 → 숏폼. <strong>‘도면 한 장이 광고 영상’</strong>이 되는 자동화. 3일차 영상 제작과 직결.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="7. Nano-Banana·Veo">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">7-5</span>Veo 3 Lite — 빠르고 저렴한 영상 에셋</h2>
+        <div class="slide-inner">
+          <p class="sub">음성 없는 빠른 영상 — 배너·룩북·인스타 릴스용</p>
+          <div class="grid2">
+            <div class="box teal"><h3><span class="ico">⚡</span>Lite의 특징</h3><ul><li>빠른 생성·낮은 비용</li><li>음성 없음(BGM은 후편집)</li><li>짧은 무빙 에셋에 최적</li></ul></div>
+            <div class="box accent"><h3><span class="ico">🎯</span>활용처</h3><ul><li>웹/SNS 배너(움직이는)</li><li>룩북·인테리어 무빙</li><li>인스타 릴스 B롤</li></ul></div>
+          </div>
+          <div class="lead"><b>비용 감각(7-1 설계 3원칙 연결)</b> — 모든 컷을 고급으로 뽑을 필요 없다. <strong>용도에 맞는 등급(Lite vs 풀)</strong>으로 비용·시간을 관리.</div>
+          <div class="tip"><b>조합</b> — 키비주얼은 Veo 3(고급), 보조 B롤·배너는 Lite. 예산 효율 극대화.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="7. Nano-Banana·Veo">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">7-6</span>맞춤형 브로셔 + AI 보이스 도슨트</h2>
+        <div class="slide-inner">
+          <p class="sub">Build 응용 — 단지 설명 음성 자동 생성, 모델하우스 안내 시스템</p>
+          <div class="grid2">
+            <div class="box teal"><h3><span class="ico">📖</span>맞춤형 브로셔</h3><p>단지 정보·비주얼을 묶어 디지털 브로셔/페이지로(Build·5일 도구 종합)</p></div>
+            <div class="box pink"><h3><span class="ico">🔊</span>AI 보이스 도슨트</h3><p>단지·평형 설명을 AI 음성으로 — 모델하우스 자동 안내</p></div>
+          </div>
+          <div class="prompt"><span class="label">도슨트 스크립트 프롬프트</span>모델하우스 84㎡ 타입 안내 도슨트 스크립트를 써줘.
+- 현관→거실→주방→침실 동선 순서
+- 각 공간의 셀링포인트(채광·수납·동선)
+- 1분 분량, 따뜻하고 신뢰감 있는 톤 → AI 음성으로 변환</div>
+          <div class="lead green"><b>섹션 7 정리</b> — 이미지(Nano-Banana)→영상(Veo)→브로셔·도슨트. <strong>분양 홍보 비주얼·영상 자산을 통째로 자동 생산</strong>한다.</div>
+        </div>
+      </section>
+
+      <!-- ===== 섹션 08 divider ===== -->
+      <section class="slide divider" data-sec="8. 통합 워크플로우">
+        <div class="slide-inner">
+          <span class="part-tag p2">PART 2 · 자동화·실무 적용</span>
+          <div class="big-num">08</div>
+          <h2 class="heading">통합 워크플로우</h2>
+          <p class="sub">오늘 배운 도구를 ‘하나의 흐름’으로 — 실전 시나리오 3종 (8-1 ~ 8-3)</p>
+          <div class="agenda">
+            <span class="pill on">8-1 신규 분양 기획</span>
+            <span class="pill">8-2 경쟁분석→차별화 카피</span>
+            <span class="pill">8-3 고객 응대 자동화</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="8. 통합 워크플로우">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">8-1</span>시나리오 1 — 신규 분양 단지 기획</h2>
+        <div class="slide-inner">
+          <p class="sub">리서치 → 자료 통합 → 보고서 → 광고 카피, 한 줄기로</p>
+          <div class="flow">
+            <span class="node on">Perplexity 리서치</span><span class="arr">→</span>
+            <span class="node on">NotebookLM 자료 통합</span><span class="arr">→</span>
+            <span class="node on">Gem 보고서(PSK)</span><span class="arr">→</span>
+            <span class="node on">AI Studio 광고 카피</span>
+          </div>
+          <div class="steps" style="margin-top:12px">
+            <li><strong>Perplexity</strong> — 시장·정책·경쟁 사례 조사(출처 포함)</li>
+            <li><strong>NotebookLM</strong> — 모집공고·보고서 통합 분석(근거 기반)</li>
+            <li><strong>Gem</strong> — PSK 구조 분양 기획 보고서 작성</li>
+            <li><strong>AI Studio</strong> — 매체별 광고 카피 9개 생성</li>
+          </div>
+          <div class="lead"><b>핵심</b> — 각 단계 산출물이 다음 단계 입력이 된다. <strong>조사 → 분석 → 전략 → 실행물</strong>이 끊김 없이 이어지는 게 자동화의 본질.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="8. 통합 워크플로우">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">8-2</span>시나리오 2 — 경쟁 분석 → 차별화 카피</h2>
+        <div class="slide-inner">
+          <p class="sub">경쟁 데이터 추출 → 비교 → 카피 → 비주얼</p>
+          <div class="flow">
+            <span class="node on">AI Studio JSON 추출</span><span class="arr">→</span>
+            <span class="node on">비교 Gem</span><span class="arr">→</span>
+            <span class="node on">카피 검수 Gem</span><span class="arr">→</span>
+            <span class="node on">Nano-Banana 비주얼</span>
+          </div>
+          <div class="steps" style="margin-top:12px">
+            <li><strong>AI Studio</strong>(6-2) — 경쟁 홈페이지 → JSON 구조화</li>
+            <li><strong>비교 Gem</strong>(5-6) — 4축 비교표·차별화 포인트 도출</li>
+            <li><strong>카피 검수 Gem</strong>(5-7) — 차별화 카피 생성·법적 점검</li>
+            <li><strong>Nano-Banana</strong>(7-2) — 카피에 맞는 키비주얼 제작</li>
+          </div>
+          <div class="lead"><b>가치</b> — 새 경쟁 단지가 등장해도 <strong>‘추출→비교→카피→비주얼’</strong>이 반자동. 대응 속도가 곧 경쟁력.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="8. 통합 워크플로우">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">8-3</span>시나리오 3 — 고객 응대 자동화</h2>
+        <div class="slide-inner">
+          <p class="sub">문의 접수부터 답변까지 — 상담 Gem · FAQ 노트북 · Gmail 연동</p>
+          <div class="flow">
+            <span class="node on">Gmail 문의 접수</span><span class="arr">→</span>
+            <span class="node on">분류·FAQ 노트북 조회</span><span class="arr">→</span>
+            <span class="node on">상담 Gem 답변 초안</span><span class="arr">→</span>
+            <span class="node on">검토·발송</span>
+          </div>
+          <div class="steps" style="margin-top:12px">
+            <li><strong>Gmail 연동 Gem</strong>(5-3) — 문의 자동 분류·우선순위</li>
+            <li><strong>FAQ 노트북</strong>(4-3) — 자료 기반 정확한 근거 조회</li>
+            <li><strong>상담 Gem</strong>(5-4) — 톤 맞춘 답변 초안 생성</li>
+            <li><strong>사람 검토</strong> — 확정 정보·민감 사안 최종 확인 후 발송</li>
+          </div>
+          <div class="lead green"><b>섹션 8 정리</b> — 도구는 ‘따로’가 아니라 ‘이어서’ 쓸 때 폭발한다. <strong>오늘 배운 8섹션이 3개 시나리오로 수렴</strong> — 이게 분양 마케팅 자동화 워크플로우.</div>
+        </div>
+      </section>
+
+      <!-- ===== 마무리 ===== -->
+      <section class="slide" data-sec="마무리">
+        <div class="slide-inner">
+          <span class="kicker green">WRAP-UP</span>
+          <h2 class="heading">오늘 핵심 8가지</h2>
+          <ul class="points">
+            <li><strong>AI 수준 점검</strong> — 수작업 2~3시간 → AI 15~20분, 단 검증 전제</li>
+            <li><strong>리서치 6종</strong> — 빠른검색·심층분석·문서검토를 작업별로(3개면 충분)</li>
+            <li><strong>할루시네이션·PSK</strong> — 6유형 인지·6원칙·교차검증 + PSK 설득 구조</li>
+            <li><strong>NotebookLM</strong> — 내 자료 ‘안에서만’ — 공고·상담·보고서·녹음 분석</li>
+            <li><strong>Gemini Gem</strong> — TCR 지침 + 구글 연동, 업무별 전용 비서 4종</li>
+            <li><strong>AI Studio</strong> — JSON·카피 9개·영상분석·앱·SVG·다국어 멀티모달</li>
+            <li><strong>Nano-Banana·Veo 3</strong> — 평면도→3D→영상→도슨트 비주얼 자산</li>
+            <li><strong>통합 워크플로우</strong> — 도구를 이어 ‘조사→분석→실행물’ 자동화</li>
+          </ul>
+          <div class="lead"><b>관통하는 원리</b> — <strong>“모으고(리서치) · 검증하고(할루시네이션) · 가공해(자동화) · 잇는다(워크플로우)”</strong>. 단일 도구가 아니라 <span class="tl">‘흐름’을 설계</span>하는 게 마케터의 새 역량.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="마무리">
+        <div class="slide-inner">
+          <span class="kicker amber">CHEAT SHEET</span>
+          <h2 class="heading">바로 쓰는 치트시트</h2>
+          <div class="grid2">
+            <div class="prompt" style="margin-top:0"><span class="label">할루시네이션 방지(복붙)</span>확실한 사실만, 불확실하면 "확인 필요" 표시.
+출처(기관·문서·URL) 함께, 추측은 '추정' 표시,
+기준 시점 명시. 숫자·법령·청약요건은 공식 원문 확인 권고.</div>
+            <div class="prompt" style="margin-top:0"><span class="label">PSK 보고서</span>아래 자료를 PSK로 1페이지 보고서로.
+P: 데이터로 문제 진단 / S: 근거 있는 해결책
+K: 정량 KPI(표). 결론부터, 출처·추정 표시.</div>
+          </div>
+          <div class="grid2">
+            <div class="box teal"><h3><span class="ico">🧭</span>도구 맵</h3><p>검색=Perplexity · 분석=ChatGPT · 문서=Claude · 내자료=NotebookLM · 비서=Gem · 멀티모달=AI Studio · 비주얼=Nano-Banana/Veo</p></div>
+            <div class="box amber"><h3><span class="ico">⚖️</span>꼭 지킬 것</h3><p>숫자·법령·청약요건 공식 확인 · 광고 카피 법무 검토 · 개인정보·API Key 보호 · ‘AI 생성’ 고지</p></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide divider" data-sec="마무리">
+        <div class="slide-inner">
+          <span class="kicker">DAY 5 · 끝</span>
+          <h1 class="title">수고하셨습니다 👏</h1>
+          <p class="sub">오늘 배운 8섹션을, 우리 단지로 ‘통합 워크플로우’ 한 번 돌려보세요.</p>
+          <div class="lead" style="margin-top:14px"><b>다음 시간(6일차)</b> — MCP·노코드 자동화 완전정복으로 이어집니다.</div>
+          <div style="margin-top:18px"><a class="home" href="index.html" style="font-size:14px;color:var(--teal)">← 전체 커리큘럼으로 돌아가기</a></div>
+        </div>
+      </section>
+
+    </div><!-- /stage -->
+
+    <div class="nav">
+      <a class="home" href="index.html">⌂ 커리큘럼</a>
+      <button class="navbtn" id="prev" aria-label="이전">‹</button>
+      <div class="progress"><div class="bar" id="bar"></div></div>
+      <button class="navbtn" id="next" aria-label="다음">›</button>
+      <div class="counter" id="counter">1 / 1</div>
+    </div>
+  </div>
+
+  <div class="hint" id="hint">← → 방향키로 이동 · F 전체화면</div>
+
+  <script>
+    const slides = Array.from(document.querySelectorAll('.slide'));
+    const bar = document.getElementById('bar');
+    const counter = document.getElementById('counter');
+    const secLabel = document.getElementById('secLabel');
+    const prevBtn = document.getElementById('prev');
+    const nextBtn = document.getElementById('next');
+    const hint = document.getElementById('hint');
+    let idx = 0;
+    function render() {
+      slides.forEach((s, i) => s.classList.toggle('active', i === idx));
+      const total = slides.length;
+      bar.style.width = ((idx + 1) / total * 100) + '%';
+      counter.textContent = (idx + 1) + ' / ' + total;
+      secLabel.textContent = slides[idx].dataset.sec || '';
+      prevBtn.disabled = idx === 0;
+      nextBtn.disabled = idx === total - 1;
+      slides[idx].scrollTop = 0;
+      if (location.hash !== '#' + (idx + 1)) history.replaceState(null, '', '#' + (idx + 1));
+    }
+    function go(n) { idx = Math.max(0, Math.min(slides.length - 1, n)); render(); }
+    prevBtn.addEventListener('click', () => go(idx - 1));
+    nextBtn.addEventListener('click', () => go(idx + 1));
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') { e.preventDefault(); go(idx + 1); }
+      else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); go(idx - 1); }
+      else if (e.key === 'Home') { go(0); }
+      else if (e.key === 'End') { go(slides.length - 1); }
+      else if (e.key === 'f' || e.key === 'F') { if (!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); }
+    });
+    const sectionStart = {};
+    slides.forEach((s, i) => { const sec = s.dataset.sec; if (sec && !(sec in sectionStart)) sectionStart[sec] = i; });
+    const tocData = [
+      ['1','AI 수준 점검·왜 리서치 AI','레벨 진단·수작업 vs AI·6강점','PART 1','1. AI 수준 점검'],
+      ['2','리서치용 AI 6종 완전정복','Perplexity·ChatGPT·Claude·NotebookLM','PART 1','2. 리서치 6종'],
+      ['3','할루시네이션 + PSK 프레임','6유형·교차검증·PSK 보고서','PART 1','3. 할루시네이션'],
+      ['4','NotebookLM 실무 실습','모집공고·상담·보고서·녹음 분석','PART 1','4. NotebookLM'],
+      ['5','Gemini Gem 맞춤 비서 4종','지침·연동·상담/시각화/검수 Gem','PART 2','5. Gemini Gem'],
+      ['6','AI Studio 멀티모달 자동화','JSON·카피 9개·영상분석·SVG','PART 2','6. AI Studio'],
+      ['7','Nano-Banana · Veo 3','비주얼 5종·이미지→영상·도슨트','PART 2','7. Nano-Banana·Veo'],
+      ['8','통합 워크플로우','신규 기획·경쟁분석·고객응대','PART 2','8. 통합 워크플로우'],
+    ];
+    const tocEl = document.getElementById('toc');
+    tocData.forEach(([n, t, d, pl, sec]) => {
+      const li = document.createElement('li');
+      li.innerHTML = `<span class="n">${n}</span><span><span class="pl">${pl}</span><br/><span class="t">${t}</span><br/><span class="d">${d}</span></span>`;
+      li.addEventListener('click', () => { if (sec in sectionStart) go(sectionStart[sec]); });
+      tocEl.appendChild(li);
+    });
+    const startHash = parseInt(location.hash.replace('#', ''), 10);
+    if (startHash && startHash >= 1 && startHash <= slides.length) idx = startHash - 1;
+    render();
+    setTimeout(() => { hint.style.transition = 'opacity 1s'; hint.style.opacity = '0'; }, 4000);
+  </script>
+</body>
+</html>
