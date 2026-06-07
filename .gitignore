@@ -1,0 +1,7 @@
+# bkit plugin state (deploy 불필요)
+.bkit/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.log

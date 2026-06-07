@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>생성형 AI 활용 마케팅 기획 · 10일 교육 커리큘럼</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --bg-soft: #1e293b;
+      --card: #1e293b;
+      --card-hover: #273449;
+      --text: #e2e8f0;
+      --text-dim: #94a3b8;
+      --accent: #38bdf8;
+      --accent-strong: #0ea5e9;
+      --highlight: #f59e0b;
+      --border: #334155;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Pretendard", "Malgun Gothic", -apple-system, BlinkMacSystemFont, sans-serif;
+      background: radial-gradient(1200px 600px at 50% -10%, #1e3a5f 0%, var(--bg) 55%);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.5;
+      padding: 48px 20px 64px;
+    }
+
+    .wrap { max-width: 1080px; margin: 0 auto; }
+
+    header { text-align: center; margin-bottom: 44px; }
+
+    header .eyebrow {
+      display: inline-block;
+      font-size: 13px;
+      letter-spacing: 0.12em;
+      color: var(--accent);
+      border: 1px solid var(--accent);
+      border-radius: 999px;
+      padding: 5px 14px;
+      margin-bottom: 18px;
+    }
+
+    header h1 {
+      font-size: clamp(24px, 4vw, 36px);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+    }
+
+    header p { color: var(--text-dim); font-size: 15px; }
+    header p .sep { margin: 0 8px; opacity: 0.5; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 18px;
+    }
+
+    .card {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 22px 22px 24px;
+      text-decoration: none;
+      color: inherit;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent), transparent);
+      opacity: 0.7;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: var(--accent);
+      background: var(--card-hover);
+      box-shadow: 0 12px 30px rgba(2, 8, 23, 0.5);
+    }
+
+    .card .top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .badge {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: var(--bg);
+      background: var(--accent);
+      border-radius: 8px;
+      padding: 5px 10px;
+    }
+
+    .badge.ko { font-size: 13px; }
+
+    .card .arrow { color: var(--text-dim); font-size: 18px; transition: transform 0.15s ease; }
+    .card:hover .arrow { transform: translateX(4px); color: var(--accent); }
+
+    .card h2 {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      line-height: 1.35;
+    }
+
+    .card .desc { font-size: 14px; color: var(--text-dim); }
+
+    /* 8일차(현재 프로젝트 연관) 강조 */
+    .card.highlight { border-color: var(--highlight); }
+    .card.highlight::before { background: linear-gradient(90deg, var(--highlight), transparent); opacity: 0.9; }
+    .card.highlight .badge { background: var(--highlight); }
+    .card.highlight:hover { border-color: var(--highlight); }
+    .card.highlight:hover .arrow { color: var(--highlight); }
+    .tag {
+      align-self: flex-start;
+      font-size: 11px;
+      color: var(--highlight);
+      border: 1px solid var(--highlight);
+      border-radius: 999px;
+      padding: 3px 9px;
+    }
+
+    footer {
+      margin-top: 44px;
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 13px;
+    }
+    footer a { color: var(--accent); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    @media (max-width: 640px) {
+      body { padding: 32px 16px 48px; }
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <span class="eyebrow">한국부동산마케팅협회 · 2026 매력일자리</span>
+      <h1>생성형 AI 활용 마케팅 기획<br />업무생산성 향상 교육</h1>
+      <p>
+        <span>전 10일 커리큘럼</span><span class="sep">·</span>
+        <span>2026년 4~5월</span><span class="sep">·</span>
+        <span>건설회관(서울 강남)</span>
+      </p>
+    </header>
+
+    <main class="grid" id="grid"></main>
+
+    <footer>
+      각 카드를 누르면 해당 일차 강의 페이지가 새 탭으로 열립니다.<br />
+      출처 ·
+      <a href="https://krema.ai/pages/sub04_02_list.php" target="_blank" rel="noopener">한국부동산마케팅협회 (krema.ai)</a>
+    </footer>
+  </div>
+
+  <script>
+    // Curriculum data — 항목 추가/수정 시 이 배열만 고치면 됩니다.
+    const BASE = "https://krema.ai/pages/sub04_02_view.php";
+
+    const curriculum = [
+      { day: 1,  no: 537, page: 2, title: "ChatGPT 활용 문서작성 & 데이터 분석", desc: "생성 AI 개론, ChatGPT 노하우, Project 보고서, 데이터 시각화" },
+      { day: 2,  no: 539, page: 2, title: "엑셀·VBA 자동화 & Custom GPT", desc: "엑셀 함수·VBA 생성, 데이터 크롤링, 나만의 업무 챗봇 제작" },
+      { day: 3,  no: 540, page: 1, title: "이미지·영상·숏츠 제작", desc: "이미지 생성 AI, 광고 스토리보드, Google Vids 영상 편집" },
+      { day: 4,  no: 541, page: 1, title: "데이터 분석 & 비개발자 Agent 제작", desc: "분양 데이터 분석, 바이브 코딩, Google AI Studio Agent" },
+      { day: 5,  no: 542, page: 1, title: "리서치 AI 6종 & 분양 마케팅 자동화", desc: "Perplexity·Claude 등 6종, NotebookLM, 통합 워크플로우" },
+      { day: 6,  no: 543, page: 1, title: "MCP·노코드 자동화 완전정복", desc: "MCP 개념, Make.com 시나리오, 공공데이터 API 수집" },
+      { day: 7,  no: 544, page: 1, title: "Claude Cowork·Skills·로컬 MCP", desc: "Cowork 자동화, Skill 제작, 한국 특화 로컬 MCP 설치" },
+      { day: 8,  no: 545, page: 1, title: "공공데이터 API × 청약 대시보드 제작·배포", desc: "청약 3종 API, Claude Code 대시보드, GitHub·Vercel 배포", highlight: true },
+      { day: 9,  no: 546, page: 1, title: "메일 트리아지 대시보드 제작·배포", desc: "GWS CLI·OAuth, Gmail→시트, 대시보드 제작·배포" },
+      { day: 10, no: 547, page: 1, title: "HyperFrames로 만드는 AI 영상", desc: "FFmpeg·HyperFrames, 한글 프롬프트 영상, ElevenLabs 나레이션" },
+    ];
+
+    function buildUrl(item) {
+      const params = new URLSearchParams({
+        no: item.no,
+        page: item.page,
+        search_type: "",
+        search_word: "",
+      });
+      return `${BASE}?${params.toString()}`;
+    }
+
+    const grid = document.getElementById("grid");
+
+    curriculum.forEach((item) => {
+      const card = document.createElement("a");
+      card.className = "card" + (item.highlight ? " highlight" : "");
+      card.href = buildUrl(item);
+      card.target = "_blank";
+      card.rel = "noopener";
+
+      card.innerHTML = `
+        <div class="top">
+          <span class="badge">DAY ${item.day}</span>
+          <span class="arrow">→</span>
+        </div>
+        ${item.highlight ? '<span class="tag">현재 프로젝트 주제</span>' : ""}
+        <h2>${item.day}일차 · ${item.title}</h2>
+        <p class="desc">${item.desc}</p>
+      `;
+
+      grid.appendChild(card);
+    });
+  </script>
+</body>
+</html>
