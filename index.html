@@ -15,6 +15,7 @@
       --accent: #38bdf8;
       --accent-strong: #0ea5e9;
       --highlight: #f59e0b;
+      --material: #34d399;
       --border: #334155;
     }
 
@@ -112,6 +113,31 @@
     .card .arrow { color: var(--text-dim); font-size: 18px; transition: transform 0.15s ease; }
     .card:hover .arrow { transform: translateX(4px); color: var(--accent); }
 
+    /* card 내부 형제 링크 구조 (제목 영역 클릭 = 강의 페이지) */
+    .card-main { display: flex; flex-direction: column; gap: 12px; text-decoration: none; color: inherit; }
+
+    /* 강의자료 보기 버튼 (다른 색상 = 초록) */
+    .material-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      color: var(--bg);
+      background: var(--material);
+      border-radius: 8px;
+      padding: 5px 11px;
+      text-decoration: none;
+      z-index: 2;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+    }
+    .material-btn:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.08);
+      box-shadow: 0 6px 16px rgba(52, 211, 153, 0.35);
+    }
+
     .card h2 {
       font-size: 18px;
       font-weight: 700;
@@ -177,7 +203,7 @@
     const BASE = "https://krema.ai/pages/sub04_02_view.php";
 
     const curriculum = [
-      { day: 1,  no: 537, page: 2, title: "ChatGPT 활용 문서작성 & 데이터 분석", desc: "생성 AI 개론, ChatGPT 노하우, Project 보고서, 데이터 시각화" },
+      { day: 1,  no: 537, page: 2, title: "ChatGPT 활용 문서작성 & 데이터 분석", desc: "생성 AI 개론, ChatGPT 노하우, Project 보고서, 데이터 시각화", material: "day1.html" },
       { day: 2,  no: 539, page: 2, title: "엑셀·VBA 자동화 & Custom GPT", desc: "엑셀 함수·VBA 생성, 데이터 크롤링, 나만의 업무 챗봇 제작" },
       { day: 3,  no: 540, page: 1, title: "이미지·영상·숏츠 제작", desc: "이미지 생성 AI, 광고 스토리보드, Google Vids 영상 편집" },
       { day: 4,  no: 541, page: 1, title: "데이터 분석 & 비개발자 Agent 제작", desc: "분양 데이터 분석, 바이브 코딩, Google AI Studio Agent" },
@@ -202,20 +228,24 @@
     const grid = document.getElementById("grid");
 
     curriculum.forEach((item) => {
-      const card = document.createElement("a");
+      const card = document.createElement("div");
       card.className = "card" + (item.highlight ? " highlight" : "");
-      card.href = buildUrl(item);
-      card.target = "_blank";
-      card.rel = "noopener";
+
+      // DAY 배지 옆: 강의자료가 있으면 초록 버튼, 없으면 화살표
+      const topRight = item.material
+        ? `<a class="material-btn" href="${item.material}" target="_blank" rel="noopener">📘 강의자료 보기</a>`
+        : `<span class="arrow">→</span>`;
 
       card.innerHTML = `
         <div class="top">
           <span class="badge">DAY ${item.day}</span>
-          <span class="arrow">→</span>
+          ${topRight}
         </div>
         ${item.highlight ? '<span class="tag">현재 프로젝트 주제</span>' : ""}
-        <h2>${item.day}일차 · ${item.title}</h2>
-        <p class="desc">${item.desc}</p>
+        <a class="card-main" href="${buildUrl(item)}" target="_blank" rel="noopener">
+          <h2>${item.day}일차 · ${item.title}</h2>
+          <p class="desc">${item.desc}</p>
+        </a>
       `;
 
       grid.appendChild(card);
