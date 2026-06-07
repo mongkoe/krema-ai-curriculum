@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>4일차 · 데이터 분석 & 비개발자 Agent 제작 | KREMA</title>
+  <style>
+    :root {
+      --bg: #0f172a; --bg-soft: #1e293b; --card: #1e293b; --card-2: #273449;
+      --text: #e2e8f0; --text-dim: #94a3b8; --accent: #38bdf8; --accent-strong: #0ea5e9;
+      --highlight: #f59e0b; --green: #34d399; --pink: #f472b6; --purple: #a78bfa;
+      --border: #334155; --code-bg: #0b1222;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      font-family: "Pretendard", "Malgun Gothic", -apple-system, BlinkMacSystemFont, sans-serif;
+      background: radial-gradient(1200px 700px at 50% -15%, #2e2150 0%, var(--bg) 55%);
+      color: var(--text); line-height: 1.6; overflow: hidden;
+    }
+    .deck { height: 100vh; display: flex; flex-direction: column; }
+    .stage { flex: 1; position: relative; overflow: hidden; }
+    .slide { position: absolute; inset: 0; padding: 50px clamp(24px, 6vw, 92px) 34px; overflow-y: auto; display: none; flex-direction: column; gap: 13px; animation: fade 0.35s ease; }
+    .slide.active { display: flex; }
+    @keyframes fade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .slide-inner { max-width: 1000px; margin: 0 auto; width: 100%; }
+
+    .kicker { display: inline-block; font-size: 12px; font-weight: 700; letter-spacing: 0.14em; color: var(--purple); border: 1px solid var(--purple); border-radius: 999px; padding: 4px 13px; margin-bottom: 14px; }
+    .kicker.amber { color: var(--highlight); border-color: var(--highlight); }
+    .kicker.green { color: var(--green); border-color: var(--green); }
+    .kicker.pink  { color: var(--pink);  border-color: var(--pink); }
+    .kicker.blue  { color: var(--accent); border-color: var(--accent); }
+
+    h1.title { font-size: clamp(28px, 5vw, 44px); font-weight: 800; letter-spacing: -0.02em; line-height: 1.2; margin-bottom: 12px; }
+    h2.heading { font-size: clamp(20px, 3.1vw, 29px); font-weight: 800; letter-spacing: -0.02em; line-height: 1.25; margin-bottom: 4px; }
+    h2.heading .num { color: var(--purple); margin-right: 10px; font-variant-numeric: tabular-nums; }
+    .sub { color: var(--text-dim); font-size: clamp(14px, 1.6vw, 16px); margin-bottom: 6px; }
+
+    p { font-size: clamp(13.5px, 1.5vw, 15.5px); }
+    strong { color: #fff; }
+    .hl { color: var(--highlight); font-weight: 700; }
+    .ac { color: var(--accent); font-weight: 700; }
+    .gr { color: var(--green); font-weight: 700; }
+    .pp { color: var(--purple); font-weight: 700; }
+
+    ul.points { list-style: none; display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+    ul.points > li { position: relative; padding-left: 25px; font-size: clamp(13.5px, 1.5vw, 15.5px); }
+    ul.points > li::before { content: ""; position: absolute; left: 4px; top: 9px; width: 8px; height: 8px; border-radius: 50%; background: var(--purple); }
+    ul.points ul { list-style: none; margin-top: 6px; padding-left: 4px; display: flex; flex-direction: column; gap: 5px; }
+    ul.points ul li { position: relative; padding-left: 18px; color: var(--text-dim); font-size: 13.5px; }
+    ul.points ul li::before { content: "–"; position: absolute; left: 2px; color: var(--text-dim); }
+
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px; }
+    .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 8px; }
+    .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 8px; }
+
+    .box { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; }
+    .box h3 { font-size: 14px; font-weight: 700; margin-bottom: 7px; display: flex; align-items: center; gap: 8px; }
+    .box .ico { font-size: 17px; }
+    .box p, .box li { font-size: 13px; color: var(--text-dim); }
+    .box ul { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+    .box ul li { position: relative; padding-left: 15px; }
+    .box ul li::before { content: "·"; position: absolute; left: 3px; color: var(--purple); font-weight: 700; }
+    .box.accent { border-color: var(--accent); }
+    .box.amber  { border-color: var(--highlight); background: rgba(245,158,11,0.06); }
+    .box.green  { border-color: var(--green); }
+    .box.pink   { border-color: var(--pink); }
+    .box.purple { border-color: var(--purple); background: rgba(167,139,250,0.05); }
+
+    .lead { background: linear-gradient(180deg, rgba(167,139,250,0.10), rgba(167,139,250,0.02)); border: 1px solid var(--purple); border-radius: 14px; padding: 12px 16px; font-size: clamp(13.5px, 1.5vw, 15px); margin: 4px 0; }
+    .lead b { color: var(--purple); }
+    .lead.blue { background: linear-gradient(180deg, rgba(56,189,248,0.10), rgba(56,189,248,0.02)); border-color: var(--accent); }
+    .lead.blue b { color: var(--accent); }
+    .lead.green { background: linear-gradient(180deg, rgba(52,211,153,0.10), rgba(52,211,153,0.02)); border-color: var(--green); }
+    .lead.green b { color: var(--green); }
+
+    .steps { counter-reset: step; display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+    .steps li { list-style: none; position: relative; padding-left: 36px; font-size: 13.5px; min-height: 25px; display: flex; align-items: center; }
+    .steps li::before { counter-increment: step; content: counter(step); position: absolute; left: 0; top: 0; width: 24px; height: 24px; border-radius: 50%; background: var(--purple); color: var(--bg); font-weight: 800; font-size: 12px; display: flex; align-items: center; justify-content: center; }
+    .steps.blue li::before { background: var(--accent); }
+    .steps.green li::before { background: var(--green); }
+    .steps.pink li::before { background: var(--pink); }
+
+    /* 프롬프트 (앰버) */
+    .prompt { background: var(--code-bg); border: 1px solid var(--border); border-left: 3px solid var(--highlight); border-radius: 10px; padding: 12px 14px; margin-top: 9px; font-family: "D2Coding", "Consolas", monospace; font-size: 12.8px; color: #cbd5e1; white-space: pre-wrap; line-height: 1.6; }
+    .prompt .label { display: block; font-family: "Pretendard", sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: var(--highlight); margin-bottom: 5px; }
+
+    /* 코드 (초록) */
+    .code { background: var(--code-bg); border: 1px solid var(--border); border-left: 3px solid var(--green); border-radius: 10px; padding: 12px 14px; margin-top: 9px; font-family: "D2Coding", "Consolas", monospace; font-size: 12.8px; color: #d6deeb; white-space: pre; overflow-x: auto; line-height: 1.65; }
+    .code .label { display: block; font-family: "Pretendard", sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: var(--green); margin-bottom: 5px; }
+    .code .cmt { color: #64748b; }
+    .code .kw  { color: #38bdf8; }
+    .code .str { color: #fbbf24; }
+    .code .fn  { color: #f472b6; }
+    .code .num { color: #a78bfa; }
+
+    /* 워크플로 */
+    .flow { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin-top: 10px; }
+    .flow .node { background: var(--card); border: 1px solid var(--border); border-radius: 9px; padding: 7px 13px; font-size: 12.8px; font-weight: 600; color: var(--text); }
+    .flow .node.on { border-color: var(--purple); color: var(--purple); }
+    .flow .arr { color: var(--text-dim); font-size: 15px; }
+
+    .tip { font-size: 12.8px; color: var(--text-dim); margin-top: 7px; }
+    .tip b { color: var(--green); }
+    .warn { color: var(--highlight); }
+
+    table.cmp { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 13px; }
+    table.cmp th, table.cmp td { border: 1px solid var(--border); padding: 8px 10px; text-align: left; vertical-align: top; }
+    table.cmp th { background: var(--card-2); color: #fff; font-weight: 700; }
+    table.cmp td { color: var(--text-dim); }
+    table.cmp tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
+    table.cmp code { font-family: "D2Coding", monospace; color: var(--purple); font-size: 12px; }
+    table.cmp td:first-child { color: #fff; font-weight: 600; }
+
+    .f { font-family: "D2Coding", "Consolas", monospace; font-size: 0.92em; color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.25); border-radius: 5px; padding: 1px 6px; }
+
+    .pill { display: inline-block; font-size: 11.5px; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--border); color: var(--text-dim); margin: 2px 4px 2px 0; }
+    .pill.on { color: var(--bg); background: var(--purple); border-color: var(--purple); font-weight: 700; }
+    .pill.part { color: var(--accent); border-color: var(--accent); font-weight: 700; }
+
+    .divider { justify-content: center; align-items: flex-start; }
+    .divider .big-num { font-size: clamp(60px, 12vw, 130px); font-weight: 800; line-height: 1; color: transparent; -webkit-text-stroke: 2px var(--purple); margin-bottom: 6px; }
+    .divider .part-tag { display: inline-block; font-size: 12px; font-weight: 700; letter-spacing: 0.1em; color: var(--accent); border: 1px solid var(--accent); border-radius: 999px; padding: 3px 12px; margin-bottom: 12px; }
+    .divider .agenda { margin-top: 16px; display: flex; flex-wrap: wrap; gap: 7px; }
+
+    .toc { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+    .toc li { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; display: flex; gap: 11px; align-items: flex-start; cursor: pointer; transition: border-color .15s ease, transform .15s ease, background .15s ease; }
+    .toc li:hover { border-color: var(--purple); transform: translateY(-2px); background: var(--card-2); }
+    .toc .n { font-size: 18px; font-weight: 800; color: var(--purple); min-width: 24px; }
+    .toc .t { font-size: 14px; font-weight: 700; }
+    .toc .d { font-size: 11.5px; color: var(--text-dim); margin-top: 2px; }
+    .toc .pl { font-size: 10px; color: var(--accent); font-weight: 700; letter-spacing: .05em; }
+
+    .topbar { display: flex; align-items: center; justify-content: space-between; padding: 11px clamp(18px, 5vw, 40px); border-bottom: 1px solid var(--border); background: rgba(15,23,42,0.7); backdrop-filter: blur(6px); flex-shrink: 0; }
+    .topbar .brand { font-size: 13px; font-weight: 700; color: var(--text); }
+    .topbar .brand span { color: var(--purple); }
+    .topbar .sec-label { font-size: 12.5px; color: var(--text-dim); }
+
+    .nav { display: flex; align-items: center; gap: 14px; padding: 9px clamp(18px, 5vw, 40px); border-top: 1px solid var(--border); background: rgba(15,23,42,0.7); backdrop-filter: blur(6px); flex-shrink: 0; }
+    .progress { flex: 1; height: 6px; background: var(--bg-soft); border-radius: 999px; overflow: hidden; }
+    .progress .bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent), var(--purple)); transition: width .3s ease; }
+    .counter { font-size: 13px; color: var(--text-dim); font-variant-numeric: tabular-nums; min-width: 64px; text-align: center; }
+    .navbtn { width: 38px; height: 38px; border-radius: 10px; border: 1px solid var(--border); background: var(--card); color: var(--text); font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .15s ease, border-color .15s ease, color .15s ease; }
+    .navbtn:hover { background: var(--purple); color: var(--bg); border-color: var(--purple); }
+    .navbtn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .navbtn:disabled:hover { background: var(--card); color: var(--text); border-color: var(--border); }
+    .home { font-size: 12.5px; color: var(--text-dim); text-decoration: none; }
+    .home:hover { color: var(--purple); }
+    .hint { position: fixed; bottom: 68px; left: 50%; transform: translateX(-50%); font-size: 12px; color: var(--text-dim); opacity: .7; pointer-events: none; }
+
+    @media (max-width: 720px) {
+      .grid2, .grid3, .grid4, .toc { grid-template-columns: 1fr; }
+      .slide { padding: 28px 15px 24px; }
+      .hint { display: none; }
+      .code, .prompt { font-size: 11.6px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="deck">
+    <div class="topbar">
+      <div class="brand">KREMA · 생성형 AI 마케팅 기획 <span>4일차</span></div>
+      <div class="sec-label" id="secLabel">표지</div>
+    </div>
+
+    <div class="stage" id="stage">
+
+      <!-- ===== 표지 ===== -->
+      <section class="slide active" data-sec="표지">
+        <div class="slide-inner">
+          <span class="kicker">DAY 4 · 한국부동산마케팅협회</span>
+          <h1 class="title">생성 AI를 활용한 데이터 분석과<br/>비개발자를 위한 Agent 제작</h1>
+          <p class="sub">2026년 5월 22일(금) 10:00–17:00 · 건설회관(서울 강남)</p>
+          <div class="lead" style="margin-top:16px">
+            <b>오늘의 목표</b> — 오전엔 광고·분양 <strong>데이터를 분석</strong>해 인사이트와 분양 기획 보고서를 만들고,
+            오후엔 코딩 없이 <strong>나만의 업무 Agent</strong>를 직접 만들어 배포합니다. ‘분석가 + 개발자’ 두 역할을 AI로.
+          </div>
+          <div class="grid2" style="margin-top:16px">
+            <div class="box purple"><h3><span class="ico">📊</span>PART 1 · 데이터 분석·분양 기획</h3><p>데이터 분석 → 타겟 마케팅 → ChatGPT 분양 보고서(최종 프로젝트)</p></div>
+            <div class="box accent"><h3><span class="ico">🤖</span>PART 2 · 비개발자 Agent 제작</h3><p>Agent 이해 → 바이브 코딩(Stitch·v0) → Google AI Studio → 안전 운영</p></div>
+          </div>
+          <div class="tip" style="margin-top:13px"><b>준비물</b> — ChatGPT(데이터 분석), 구글 계정(AI Studio·시트), Perplexity. 코딩 지식 불필요.</div>
+        </div>
+      </section>
+
+      <!-- ===== 목차 ===== -->
+      <section class="slide" data-sec="목차">
+        <div class="slide-inner">
+          <span class="kicker">CONTENTS</span>
+          <h2 class="heading">오늘 다루는 7개 섹션 (2 PART)</h2>
+          <p class="sub">제목을 누르면 해당 섹션으로 바로 이동합니다.</p>
+          <ul class="toc" id="toc"></ul>
+        </div>
+      </section>
+
+      <!-- ===== 섹션 01 divider ===== -->
+      <section class="slide divider" data-sec="1. 데이터 분석">
+        <div class="slide-inner">
+          <span class="part-tag">PART 1 · 데이터 분석·분양 기획</span>
+          <div class="big-num">01</div>
+          <h2 class="heading">데이터 분석 및 인사이트 도출</h2>
+          <p class="sub">엑셀을 올리고 ‘질문’으로 분석 — 광고·분양 데이터에서 의사결정 근거를 뽑는다 (1-1 ~ 1-5)</p>
+          <div class="agenda">
+            <span class="pill on">1-1 광고 데이터(CTR·ROI)</span>
+            <span class="pill">1-2 분양 성과 시각화</span>
+            <span class="pill">1-3 연간 매출·프로모션</span>
+            <span class="pill">1-4 Search GPT</span>
+            <span class="pill">1-5 Perplexity</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 섹션01 도입: 데이터 분석 방법 -->
+      <section class="slide" data-sec="1. 데이터 분석">
+        <div class="slide-inner">
+          <span class="kicker green">시작 전 핵심</span>
+          <h2 class="heading">ChatGPT 데이터 분석 4단계</h2>
+          <p class="sub">코드를 짜는 게 아니라 ‘질문’한다 — 데이터 분석(Code Interpreter) 기능 활용</p>
+          <div class="steps green">
+            <li><strong>파일 업로드</strong> — 광고·분양 데이터(.xlsx/.csv)를 첨부</li>
+            <li><strong>맥락·목표 설명</strong> — “이건 키워드별 광고 성과야. 효율 낮은 걸 찾고 싶어”</li>
+            <li><strong>분석·시각화 요청</strong> — 요약·이상치·차트를 한 번에</li>
+            <li><strong>해석·후속</strong> — “그래서 예산을 어떻게 재배분?”까지 이어 묻기</li>
+          </div>
+          <div class="lead green"><b>핵심 전환</b> — 데이터 분석의 8할은 ‘질문 설계’. <strong>무엇을 알고 싶은지</strong>가 명확하면 AI가 통계·차트를 대신 만든다. 숫자 결과는 한 번 검산.</div>
+          <div class="tip warn"><b>보안</b> — 고객 개인정보·기밀 데이터는 사내 정책 확인 후. 가능하면 식별정보(이름·연락처) 제거 후 업로드.</div>
+        </div>
+      </section>
+
+      <!-- 1-1 광고 데이터 -->
+      <section class="slide" data-sec="1. 데이터 분석">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">1-1</span>광고 데이터 탐색 — CTR·ROI 최적화</h2>
+        <div class="slide-inner">
+          <p class="sub">키워드별 광고 성과에서 ‘효율’을 가려내고 예산을 재배분</p>
+          <div class="grid2">
+            <div class="box accent"><h3><span class="ico">🖱️</span>CTR (클릭률)</h3><p>노출 대비 클릭 = 클릭÷노출. <strong>상·하위 10개 키워드</strong>로 ‘반응 좋은/나쁜 메시지’ 파악</p></div>
+            <div class="box purple"><h3><span class="ico">💰</span>ROI (투자수익률)</h3><p>(수익−비용)÷비용. <strong>예산을 ROI 높은 키워드로</strong> 이동 → 같은 돈으로 더 큰 성과</p></div>
+          </div>
+          <div class="code"><span class="label">ChatGPT가 생성·실행하는 분석 (pandas)</span><span class="cmt"># CTR 계산 후 상·하위 10개 키워드</span>
+df[<span class="str">"CTR"</span>] = df[<span class="str">"클릭수"</span>] / df[<span class="str">"노출수"</span>]
+top10  = df.sort_values(<span class="str">"CTR"</span>, ascending=<span class="kw">False</span>).head(<span class="num">10</span>)
+worst10 = df.sort_values(<span class="str">"CTR"</span>).head(<span class="num">10</span>)
+
+<span class="cmt"># ROI 계산 → 예산 재배분 우선순위</span>
+df[<span class="str">"ROI"</span>] = (df[<span class="str">"매출"</span>] - df[<span class="str">"광고비"</span>]) / df[<span class="str">"광고비"</span>]
+df.sort_values(<span class="str">"ROI"</span>, ascending=<span class="kw">False</span>)[[<span class="str">"키워드"</span>, <span class="str">"ROI"</span>]]</div>
+          <div class="prompt"><span class="label">프롬프트 (코드 몰라도 OK)</span>첨부한 광고 데이터로 키워드별 CTR을 계산해 상·하위 10개를 표로,
+ROI를 계산해 예산을 재배분할 우선순위 5개와 그 근거를 알려줘.
+하위 키워드는 '중단/개선' 중 무엇이 좋을지 의견도.</div>
+        </div>
+      </section>
+
+      <!-- 1-2 분양 성과 시각화 -->
+      <section class="slide" data-sec="1. 데이터 분석">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">1-2</span>분양 성과 데이터 시각화</h2>
+        <div class="slide-inner">
+          <p class="sub">지역별 분양률·편차를 계산하고 ‘보고서용 한글 차트’를 자동 생성</p>
+          <div class="grid2">
+            <div class="box accent"><h3><span class="ico">📈</span>핵심 지표</h3><ul><li>지역별 <strong>분양률</strong>(계약÷공급)</li><li><strong>표준편차</strong> = 지역 간 성과 격차</li><li>평균 대비 저성과 지역 식별</li></ul></div>
+            <div class="box amber"><h3><span class="ico">🇰🇷</span>한글 깨짐 주의</h3><p>파이썬 차트는 한글이 □로 깨진다 → <strong>koreanize-matplotlib</strong> 또는 폰트 지정으로 해결</p></div>
+          </div>
+          <div class="code"><span class="label">한글 차트 처리 + 시각화</span><span class="cmt"># 한글 폰트 깨짐 방지 (Colab/주피터)</span>
+!pip install koreanize-matplotlib
+<span class="kw">import</span> koreanize_matplotlib, matplotlib.pyplot <span class="kw">as</span> plt
+
+분양률 = df.groupby(<span class="str">"지역"</span>)[<span class="str">"분양률"</span>].mean()
+print(<span class="str">"지역 간 표준편차:"</span>, df[<span class="str">"분양률"</span>].std())
+분양률.sort_values().plot(kind=<span class="str">"barh"</span>, title=<span class="str">"지역별 평균 분양률"</span>)</div>
+          <div class="prompt"><span class="label">프롬프트</span>분양 데이터로 지역별 평균 분양률과 표준편차를 구하고,
+평균보다 낮은 지역을 강조한 가로 막대 차트를 한글 깨짐 없이 만들어줘.
+보고서에 넣을 수 있게 제목·축 라벨 포함.</div>
+        </div>
+      </section>
+
+      <!-- 1-3 연간 매출 분석 -->
+      <section class="slide" data-sec="1. 데이터 분석">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">1-3</span>연간 분양 매출 분석 · 프로모션 기획</h2>
+        <div class="slide-inner">
+          <p class="sub">2025년 수도권 매출에서 ‘저성과’를 찾아 회복 전략과 KPI를 설계</p>
+          <div class="flow">
+            <span class="node on">매출 분석</span><span class="arr">→</span>
+            <span class="node">저성과 진단</span><span class="arr">→</span>
+            <span class="node">회복 전략</span><span class="arr">→</span>
+            <span class="node">KPI 설정</span>
+          </div>
+          <div class="prompt"><span class="label">프롬프트 — 분석에서 기획까지</span>첨부한 2025년 수도권 분양 매출 데이터를 분석해줘.
+1) 월별·지역별 추세와 전년 대비 증감
+2) 저성과 구간(시기·지역)과 추정 원인
+3) 회복을 위한 프로모션 전략 3가지(타겟·메시지·채널)
+4) 각 전략의 KPI(측정 지표·목표치)를 표로</div>
+          <div class="grid3">
+            <div class="box purple"><h3><span class="ico">🎯</span>KPI 예</h3><p>방문예약 수, 계약전환율, CPL(리드당 비용)</p></div>
+            <div class="box purple"><h3><span class="ico">🛠️</span>전략 예</h3><p>한정 혜택, 타겟 리타게팅, 채널 재배분</p></div>
+            <div class="box purple"><h3><span class="ico">📅</span>실행 예</h3><p>주차별 액션 + 점검 리듬</p></div>
+          </div>
+          <div class="tip"><b>핵심</b> — 분석으로 끝내지 말고 <b>‘분석→전략→KPI’</b>까지. 측정 가능한 목표가 있어야 실행·점검이 된다.</div>
+        </div>
+      </section>
+
+      <!-- 1-4 Search GPT -->
+      <section class="slide" data-sec="1. 데이터 분석">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">1-4</span>Search GPT — 트렌드 조사·전략 보고서</h2>
+        <div class="slide-inner">
+          <p class="sub">ChatGPT의 웹 검색으로 최신 시장 트렌드를 조사해 보고서로</p>
+          <div class="grid2">
+            <div class="box accent"><h3><span class="ico">🔎</span>강점</h3><ul><li>최신 웹 정보 + 출처</li><li>대화 맥락 유지하며 심화</li><li>조사→정리→보고서 한 흐름</li></ul></div>
+            <div class="box"><h3><span class="ico">🎯</span>실습 주제</h3><ul><li>2026 상반기 부동산 트렌드</li><li>3040 맞벌이 타겟 전략</li></ul></div>
+          </div>
+          <div class="prompt"><span class="label">프롬프트 — 타겟 전략 보고서</span>웹 검색으로 '2026 상반기 수도권 부동산·분양 트렌드'를 조사하고,
+'3040 맞벌이 부부'를 타겟으로 한 마케팅 전략 보고서를 작성해줘.
+1) 트렌드 요약(출처)  2) 타겟의 니즈·구매여정
+3) 핵심 메시지·채널  4) 실행 안 + 리스크. 표·불릿으로.</div>
+          <div class="tip warn"><b>검증</b> — 검색 기반이라도 수치·정책은 출처 클릭해 원문 확인. ‘AI가 요약한 사실’은 초안.</div>
+        </div>
+      </section>
+
+      <!-- 1-5 Perplexity -->
+      <section class="slide" data-sec="1. 데이터 분석">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">1-5</span>Perplexity — 분양 사례·규제 조사</h2>
+        <div class="slide-inner">
+          <p class="sub">출처가 또렷한 리서치 — 경쟁 사례와 규제를 근거 있게</p>
+          <div class="grid2">
+            <div class="box purple"><h3><span class="ico">🏢</span>실습 ①</h3><p>강남3구 신축 아파트 <strong>분양 사례</strong> — 분양가·경쟁률·완판 여부</p></div>
+            <div class="box purple"><h3><span class="ico">📋</span>실습 ②</h3><p><strong>분양가상한제</strong> 적용 사례 — 대상·기준·시장 영향</p></div>
+          </div>
+          <div class="prompt"><span class="label">프롬프트</span>강남3구(강남·서초·송파)의 최근 신축 아파트 분양 사례를
+분양가·전용면적·청약경쟁률·완판 여부로 표로 정리하고 출처를 달아줘.
+이어서 분양가상한제 적용 사례와 시장 영향도 요약해줘.</div>
+          <div class="lead green"><b>섹션 1 정리</b> — 데이터(정량) + 검색(정성)을 합쳐 ‘근거 있는 인사이트’를 만든다. 이 인사이트가 섹션 2·3의 <strong>타겟 전략과 보고서</strong>의 재료가 된다.</div>
+        </div>
+      </section>
+
+      <!-- ===== 섹션 02 divider ===== -->
+      <section class="slide divider" data-sec="2. 타겟 마케팅">
+        <div class="slide-inner">
+          <span class="part-tag">PART 1 · 데이터 분석·분양 기획</span>
+          <div class="big-num">02</div>
+          <h2 class="heading">AI 기반 고객 타겟 마케팅 기획안</h2>
+          <p class="sub">페르소나·검색 키워드를 도출하고, 채널별 A/B 광고 문구로 반응까지 시뮬레이션 (2-1 ~ 2-5)</p>
+          <div class="agenda">
+            <span class="pill on">2-1 페르소나 분석</span>
+            <span class="pill">2-2 행동·키워드</span>
+            <span class="pill">2-3 A/B 2030</span>
+            <span class="pill">2-4 A/B 4050</span>
+            <span class="pill">2-5 반응 시뮬</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="2. 타겟 마케팅">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">2-1</span>분양 고객 페르소나 분석</h2>
+        <div class="slide-inner">
+          <p class="sub">‘누구에게 파는가’를 구체적 인물로 — 2030 투자 입문층 vs 4050 상업시설 투자자</p>
+          <table class="cmp">
+            <thead><tr><th>구분</th><th>2030 투자 입문층</th><th>4050 상업시설 투자자</th></tr></thead>
+            <tbody>
+              <tr><td>관심사</td><td>내 집 마련·시세차익·갭투자</td><td>임대수익·자산 배분·절세</td></tr>
+              <tr><td>라이프스타일</td><td>모바일·SNS, 트렌드 민감</td><td>안정 지향, 전문가 신뢰</td></tr>
+              <tr><td>재정 특징</td><td>자본 적음, 대출 의존</td><td>여유 자본, 현금 흐름 중시</td></tr>
+              <tr><td>선호 상품</td><td>소형·역세권 아파트</td><td>상가·오피스텔·수익형</td></tr>
+              <tr><td>결정 요인</td><td>가격·입지·대출 한도</td><td>수익률·공실 리스크·브랜드</td></tr>
+            </tbody>
+          </table>
+          <div class="prompt"><span class="label">페르소나 생성 프롬프트</span>분양 타겟 2개 그룹(2030 투자 입문층 / 4050 상업시설 투자자)의
+페르소나를 만들어줘. 각각 관심사·라이프스타일·재정 특징·선호 상품·
+구매 결정 요인을 표로. 대표 인물(이름·나이·한 줄 소개)도 붙여줘.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="2. 타겟 마케팅">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">2-2</span>행동 패턴 · 검색 키워드 도출</h2>
+        <div class="slide-inner">
+          <p class="sub">타겟이 ‘무엇을 검색하는가’를 알면 광고·콘텐츠 키워드가 보인다</p>
+          <table class="cmp">
+            <thead><tr><th>키워드 축</th><th>2030 입문층 예</th><th>4050 투자자 예</th></tr></thead>
+            <tbody>
+              <tr><td>분양 시기</td><td><code>3기 신도시 분양일정</code></td><td><code>상가 분양 시기</code></td></tr>
+              <tr><td>지역·상권</td><td><code>역세권 신축</code></td><td><code>유동인구 상권 분석</code></td></tr>
+              <tr><td>가격</td><td><code>분양가 대출 한도</code></td><td><code>상가 수익률 계산</code></td></tr>
+              <tr><td>브랜드</td><td><code>브랜드 아파트 비교</code></td><td><code>시행사 신뢰도</code></td></tr>
+              <tr><td>대출·세금</td><td><code>생애최초 대출</code></td><td><code>임대사업자 세금</code></td></tr>
+            </tbody>
+          </table>
+          <div class="prompt"><span class="label">키워드 도출 프롬프트</span>위 두 페르소나가 분양 정보를 찾을 때 쓸 검색 키워드를
+축별(분양시기·지역상권·가격·브랜드·대출세금)로 각 5개씩 뽑아줘.
+관심 투자 지역도 추정해서 함께. (2일차 네이버 API로 실제 검증 가능)</div>
+          <div class="tip"><b>연결</b> — 이 키워드는 광고 타게팅·블로그 주제·SEO에 그대로 활용. 2일차 네이버 데이터 수집과 결합하면 실제 수요 검증까지.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="2. 타겟 마케팅">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">2-3</span>A/B 테스트 광고 문구 — 2030 (인스타·숏츠)</h2>
+        <div class="slide-inner">
+          <p class="sub">같은 타겟, 두 가지 톤 — 감성 vs 실용으로 무엇이 먹히는지</p>
+          <div class="grid2">
+            <div class="box pink"><h3><span class="ico">A</span>감성·트렌디</h3><p>“퇴근길이 설레는 집, 여기서 시작” — 라이프스타일·감정 자극, 비주얼 중심</p></div>
+            <div class="box accent"><h3><span class="ico">B</span>실용·정보 중심</h3><p>“역세권 3분 · 생애최초 대출 OK” — 혜택·숫자·조건 명시</p></div>
+          </div>
+          <div class="prompt"><span class="label">A/B 카피 생성 프롬프트</span>2030 입문층 대상 인스타/유튜브 숏츠 광고 문구를 A/B로 만들어줘.
+A안: 감성·트렌디(라이프스타일 소구)
+B안: 실용·정보(혜택·조건 명시)
+각 3개씩, 후킹 첫 문장 + 본문 + CTA. 숏츠 자막용으로 짧게.</div>
+          <div class="tip"><b>A/B 원칙</b> — <b>한 번에 하나의 변수</b>만 바꿔 비교(톤만 다르게). 둘 다 좋으면 채널·시간대로 다시 쪼개 테스트.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="2. 타겟 마케팅">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">2-4</span>A/B 테스트 광고 문구 — 4050 (페북·블로그)</h2>
+        <div class="slide-inner">
+          <p class="sub">투자자에겐 ‘수익·안정’과 ‘브랜드·희소성’ 중 무엇이 통하나</p>
+          <div class="grid2">
+            <div class="box purple"><h3><span class="ico">A</span>수익·안정성</h3><p>“연 OO% 기대수익 · 공실 걱정 없는 입지” — 숫자·리스크 관리 강조</p></div>
+            <div class="box amber"><h3><span class="ico">B</span>브랜드 신뢰·희소성</h3><p>“검증된 시행사 · 단 OO세대 한정” — 신뢰·희소성 소구</p></div>
+          </div>
+          <div class="prompt"><span class="label">A/B 카피 생성 프롬프트</span>4050 상업시설 투자자 대상 페이스북/네이버 블로그 광고를 A/B로.
+A안: 수익·안정성(수익률·공실 리스크 관리)
+B안: 브랜드 신뢰·희소성(시행사·한정 물량)
+페북용 짧은 카피 3개 + 블로그용 제목 3개. 과장·허위 표현 배제.</div>
+          <div class="tip warn"><b>법적 주의</b> — 수익률·확정 수익 표현은 과장·허위 광고 리스크. “기대”, “추정”을 명시하고 근거·면책 병기.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="2. 타겟 마케팅">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">2-5</span>광고 반응 시뮬레이션</h2>
+        <div class="slide-inner">
+          <p class="sub">집행 전, AI로 ‘예상 반응’을 미리 받아 카피를 다듬는다</p>
+          <div class="grid2">
+            <div class="box green"><h3><span class="ico">👍</span>긍정 반응 예</h3><ul><li>“대출 조건이 명확해서 좋다”</li><li>“숫자가 구체적이라 신뢰”</li></ul></div>
+            <div class="box amber"><h3><span class="ico">👎</span>부정 반응 예</h3><ul><li>“너무 광고 같다/과장”</li><li>“정작 분양가가 안 보임”</li></ul></div>
+          </div>
+          <div class="prompt"><span class="label">반응 시뮬레이션 프롬프트</span>위 A/B 광고 문구 각각에 대해, 타겟 페르소나가 보일 법한
+긍정/부정 반응을 3개씩 예측하고 '왜 그렇게 느끼는지' 이유를 분석해줘.
+이를 토대로 더 나은 개선안 1개씩 제안해줘.</div>
+          <div class="lead green"><b>섹션 2 정리</b> — 페르소나 → 키워드 → A/B 카피 → 반응 시뮬. <strong>집행 전에 ‘가설→검증’을 AI로 빠르게 돌려</strong> 실패 비용을 줄인다.</div>
+        </div>
+      </section>
+
+      <!-- ===== 섹션 03 divider ===== -->
+      <section class="slide divider" data-sec="3. 분양 보고서">
+        <div class="slide-inner">
+          <span class="part-tag">PART 1 · 최종 프로젝트</span>
+          <div class="big-num">03</div>
+          <h2 class="heading">ChatGPT 활용 분양 기획 보고서 작성</h2>
+          <p class="sub">오전의 분석·인사이트를 모아 ‘완성된 보고서 한 편’으로 — 도입부터 결론까지 (3-1 ~ 3-6)</p>
+          <div class="agenda">
+            <span class="pill on">3-1 도입부</span>
+            <span class="pill">3-2 경쟁 비교</span>
+            <span class="pill">3-3 페르소나</span>
+            <span class="pill">3-4 본문1 경쟁력</span>
+            <span class="pill">3-5 본문2 마케팅</span>
+            <span class="pill">3-6 로드맵·결론</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="3. 분양 보고서">
+        <div class="slide-inner">
+          <span class="kicker amber">프로젝트 개요</span>
+          <h2 class="heading">최종 프로젝트 — 보고서 전체 구조</h2>
+          <p class="sub">ChatGPT Project(1일차)에 자료를 넣고, 섹션을 이어 쓰며 한 편을 완성</p>
+          <div class="flow">
+            <span class="node on">도입(현황)</span><span class="arr">→</span>
+            <span class="node">경쟁 비교</span><span class="arr">→</span>
+            <span class="node">페르소나</span><span class="arr">→</span>
+            <span class="node">본문1 경쟁력</span><span class="arr">→</span>
+            <span class="node">본문2 마케팅</span><span class="arr">→</span>
+            <span class="node">로드맵·결론</span>
+          </div>
+          <div class="lead"><b>준비</b> — 1일차 ‘프로젝트’ 기능에 사업지 자료·경쟁 데이터·페르소나(섹션2)·분석 결과(섹션1)를 업로드. 지침에 “부동산 분양 전략가” 역할 고정.</div>
+          <div class="lead green"><b>핵심 무기 — 3단 구조</b> — 모든 본문은 <strong>분석(사실) → 해석(의미) → 시사점(그래서 우리는)</strong> 순서로. 보고서가 ‘데이터 나열’이 아닌 ‘전략 제안’이 된다.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="3. 분양 보고서">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">3-1</span>보고서 도입부 (현황 파악)</h2>
+        <div class="slide-inner">
+          <p class="sub">역할 부여 → 사업지 개요 → 전략 수립의 필요성</p>
+          <div class="prompt"><span class="label">도입부 작성 프롬프트</span>너는 15년 차 부동산 분양 전략가다. 아래 사업지의 분양 기획 보고서
+'도입부'를 작성해줘.
+[사업지 개요] 위치·규모·세대수·평형·예정 분양가(첨부 자료 참고)
+[요청] ① 시장 현황 3줄 ② 이 사업지의 기회·위협 요약
+       ③ '왜 지금 전략 수립이 필요한가'를 설득력 있게
+- 결론부터, 표·불릿, 과장 없는 실무 톤</div>
+          <div class="grid3">
+            <div class="box purple"><h3><span class="ico">🎭</span>역할 부여</h3><p>전문가 페르소나로 관점·깊이 고정</p></div>
+            <div class="box purple"><h3><span class="ico">📍</span>사업지 개요</h3><p>객관적 사실(자료 기반)로 시작</p></div>
+            <div class="box purple"><h3><span class="ico">❓</span>필요성</h3><p>‘왜 지금’으로 보고서의 목적 정렬</p></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="3. 분양 보고서">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">3-2</span>경쟁 단지 비교 인사이트 + 시각화</h2>
+        <div class="slide-inner">
+          <p class="sub">자사 vs 경쟁을 4축(입지·상품·가격·타겟)으로 비교</p>
+          <table class="cmp">
+            <thead><tr><th>비교 축</th><th>자사 단지</th><th>경쟁 단지 A</th></tr></thead>
+            <tbody>
+              <tr><td>입지</td><td>역세권 도보 5분</td><td>역세권 도보 12분</td></tr>
+              <tr><td>상품</td><td>전 세대 남향·판상형</td><td>혼합형</td></tr>
+              <tr><td>가격</td><td>3.3㎡당 OO만원</td><td>3.3㎡당 OO만원</td></tr>
+              <tr><td>타겟</td><td>3040 실수요</td><td>투자 수요 중심</td></tr>
+            </tbody>
+          </table>
+          <div class="prompt"><span class="label">비교·시각화 프롬프트</span>자사와 경쟁 단지 2곳을 입지·상품·가격·타겟 4축으로 비교 표를 만들고,
+강·약점 인사이트를 도출해줘. 4축을 레이더(또는 막대) 차트로 시각화하고,
+'우리가 이길 수 있는 포인트' 3가지를 짚어줘.</div>
+          <div class="tip"><b>핵심</b> — 비교의 목적은 ‘우열 나열’이 아니라 <b>‘우리의 차별화 포인트 발굴’</b>. 이긴 축을 마케팅 메시지로.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="3. 분양 보고서">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">3-3</span>타겟 고객 페르소나 — ‘38세 김지훈’</h2>
+        <div class="slide-inner">
+          <p class="sub">대표 페르소나 1명으로 의사결정 구조와 Pain Point를 구체화</p>
+          <div class="grid2">
+            <div class="box accent"><h3><span class="ico">🙍</span>프로필</h3><ul><li>38세, 맞벌이, 7세 자녀</li><li>전세 거주, 첫 매수 고민</li><li>출퇴근·교육환경 중시</li></ul></div>
+            <div class="box amber"><h3><span class="ico">😣</span>Pain Point</h3><ul><li>“대출 한도·금리가 부담”</li><li>“지금 사도 될까 타이밍 불안”</li><li>“정보가 너무 많고 복잡”</li></ul></div>
+          </div>
+          <div class="prompt"><span class="label">페르소나 심화 프롬프트</span>대표 페르소나 '38세 김지훈'을 만들어줘.
+① 프로필·라이프스타일 ② 핵심 Pain Point 3가지
+③ 의사결정 구조(인지→비교→확신→행동의 단계별 고민과 트리거)
+④ 각 단계에서 우리가 줄 수 있는 '안심 메시지'</div>
+          <div class="tip"><b>왜 1명?</b> — 추상적 ‘3040’보다 <b>구체적 1명</b>이 메시지를 날카롭게 한다. 모든 카피를 “김지훈이 들으면?”으로 점검.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="3. 분양 보고서">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">3-4</span>본문 1 — 가격·입지·상품 경쟁력</h2>
+        <div class="slide-inner">
+          <p class="sub">3단 구조(분석 → 해석 → 시사점)를 본문에 적용</p>
+          <table class="cmp">
+            <thead><tr><th>단계</th><th>내용</th><th>예시</th></tr></thead>
+            <tbody>
+              <tr><td>분석(사실)</td><td>데이터·수치</td><td>“경쟁 대비 3.3㎡당 OO만원 낮음”</td></tr>
+              <tr><td>해석(의미)</td><td>그것이 뜻하는 바</td><td>“실수요층 진입장벽이 낮다”</td></tr>
+              <tr><td>시사점(전략)</td><td>그래서 우리는</td><td>“가격 메리트를 핵심 메시지로”</td></tr>
+            </tbody>
+          </table>
+          <div class="prompt"><span class="label">본문1 작성 프롬프트</span>가격·입지·상품 경쟁력을 각각 '분석→해석→시사점' 3단 구조로 써줘.
+- 분석: 자료의 수치·사실  - 해석: 그 의미
+- 시사점: 마케팅·영업 전략으로 연결
+각 항목 끝에 '핵심 한 줄'로 요약.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="3. 분양 보고서">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">3-5</span>본문 2 — 마케팅 · 홍보 전략</h2>
+        <div class="slide-inner">
+          <p class="sub">실수요자 관점에서 채널별 메시지를 설계</p>
+          <table class="cmp">
+            <thead><tr><th>채널</th><th>핵심 메시지</th><th>형식</th></tr></thead>
+            <tbody>
+              <tr><td>인스타·숏츠</td><td>라이프스타일·입지 매력</td><td>15초 영상(3일차 제작)</td></tr>
+              <tr><td>네이버·블로그</td><td>가격·대출·실거주 정보</td><td>정보형 포스팅·검색</td></tr>
+              <tr><td>유튜브</td><td>모델하우스 투어·후기</td><td>중장 영상</td></tr>
+              <tr><td>오프라인</td><td>현장 체험·상담 혜택</td><td>홍보관·DM</td></tr>
+            </tbody>
+          </table>
+          <div class="prompt"><span class="label">본문2 작성 프롬프트</span>실수요자(김지훈) 관점에서 채널별 마케팅 전략을 설계해줘.
+각 채널의 ① 핵심 메시지 ② 콘텐츠 형식 ③ 기대 효과를 표로,
+구매여정(인지→관심→확신) 단계별로 어떤 채널이 작동하는지도 매핑.</div>
+          <div class="tip"><b>연결</b> — 3일차에서 만든 이미지·영상이 여기 채널 콘텐츠로. 2일차 데이터로 채널 효과 측정. <b>4일간 배운 게 한 보고서로 수렴</b>.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="3. 분양 보고서">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">3-6</span>실행 로드맵 + 결론</h2>
+        <div class="slide-inner">
+          <p class="sub">5단계 퍼널(인지 → 관심 → 방문 → 계약 → 잔여)로 실행안과 기대효과</p>
+          <table class="cmp">
+            <thead><tr><th>단계</th><th>목표</th><th>핵심 액션</th></tr></thead>
+            <tbody>
+              <tr><td>① 인지</td><td>도달·노출</td><td>SNS 광고·숏츠·검색</td></tr>
+              <tr><td>② 관심</td><td>정보 탐색</td><td>블로그·랜딩·뉴스레터</td></tr>
+              <tr><td>③ 방문</td><td>모델하우스</td><td>예약 이벤트·DM</td></tr>
+              <tr><td>④ 계약</td><td>전환</td><td>상담·한정 혜택·금융 안내</td></tr>
+              <tr><td>⑤ 잔여</td><td>완판</td><td>리타게팅·추천 보상</td></tr>
+            </tbody>
+          </table>
+          <div class="prompt"><span class="label">로드맵·결론 프롬프트</span>인지→관심→방문→계약→잔여 5단계 실행 로드맵을 만들어줘.
+각 단계 목표·핵심 액션·KPI·기간을 표로, 마지막에 보고서 전체를
+종합한 '결론'과 '기대 효과(정량 목표 포함)'를 작성. 임원 보고용 톤.</div>
+          <div class="lead green"><b>섹션 3 정리</b> — 도입→경쟁→페르소나→본문(3단 구조)→로드맵→결론. <strong>분석을 ‘설득되는 전략 보고서’로 완성</strong>하는 것이 PART 1의 마무리이자 오늘 오전의 결실.</div>
+        </div>
+      </section>
+
+      <!-- ===== 섹션 04 divider ===== -->
+      <section class="slide divider" data-sec="4. Agent 이해">
+        <div class="slide-inner">
+          <span class="part-tag" style="color:var(--purple);border-color:var(--purple)">PART 2 · 비개발자 Agent 제작</span>
+          <div class="big-num">04</div>
+          <h2 class="heading">Agent의 이해와 업무 적용 포인트</h2>
+          <p class="sub">‘질문하면 답하는 AI’를 넘어, ‘스스로 일하는 AI’ — 무엇이 바뀌고 어떻게 만드나 (4-1 ~ 4-5)</p>
+          <div class="agenda">
+            <span class="pill on">4-1 AI 발전 현황</span>
+            <span class="pill">4-2 정의·As-Is/To-Be</span>
+            <span class="pill">4-3 비개발자 3방법</span>
+            <span class="pill">4-4 서비스 비교</span>
+            <span class="pill">4-5 사내 사례</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="4. Agent 이해">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">4-1</span>AI 발전 현황 — 3년의 진화</h2>
+        <div class="slide-inner">
+          <p class="sub">2023 → 2025 → 2026, 협업 도구가 어떻게 변했나</p>
+          <table class="cmp">
+            <thead><tr><th>시기</th><th>AI의 역할</th><th>사용 방식</th></tr></thead>
+            <tbody>
+              <tr><td>2023</td><td>대화형 도우미</td><td>물어보면 답하는 ‘챗봇’</td></tr>
+              <tr><td>2025</td><td>도구 사용 비서</td><td>검색·코드·이미지·파일 처리</td></tr>
+              <tr><td>2026</td><td><strong>자율 Agent</strong></td><td>목표를 주면 <strong>스스로 단계를 실행</strong></td></tr>
+            </tbody>
+          </table>
+          <div class="lead"><b>본질 변화</b> — “답을 주는 AI”에서 <strong>“일을 끝내는 AI”</strong>로. 사람이 시키는 단계 하나하나가 아니라, <span class="pp">목표</span>를 주면 도구를 골라 스스로 수행한다.</div>
+          <div class="tip"><b>의미</b> — 비개발자도 ‘반복 업무 자동화’를 직접 설계·소유하는 시대. 오늘 그 첫 Agent를 만든다.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="4. Agent 이해">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">4-2</span>Agent 정의 · As-Is vs To-Be</h2>
+        <div class="slide-inner">
+          <p class="sub">Agent = ‘목표·도구·자율 실행’을 갖춘 AI. 시장조사 업무로 보는 변화</p>
+          <table class="cmp">
+            <thead><tr><th>구분</th><th>As-Is (사람)</th><th>To-Be (Agent)</th></tr></thead>
+            <tbody>
+              <tr><td>인원·시간</td><td><strong>3인 × 8시간</strong></td><td><strong>1인 × 30분</strong></td></tr>
+              <tr><td>자료 수집</td><td>수동 검색·복붙</td><td>API·검색 자동 수집</td></tr>
+              <tr><td>정리·분석</td><td>엑셀 수작업</td><td>자동 집계·시각화</td></tr>
+              <tr><td>보고서</td><td>직접 작성</td><td>초안 자동 생성</td></tr>
+            </tbody>
+          </table>
+          <div class="lead green"><b>핵심</b> — Agent는 ‘사람을 대체’가 아니라 <strong>‘반복·수집·정리’를 위임</strong>하고, 사람은 판단·전략에 집중. 같은 일을 <span class="gr">16배 빠르게</span>.</div>
+          <div class="tip"><b>Agent 3요소</b> — ① 목표(무엇을) ② 도구(API·코드·검색) ③ 자율 실행(스스로 단계 수행).</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="4. Agent 이해">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">4-3</span>비개발자의 3가지 제작 방법</h2>
+        <div class="slide-inner">
+          <p class="sub">코딩 없이 Agent·자동화를 만드는 길은 크게 셋</p>
+          <div class="grid3">
+            <div class="box accent"><h3><span class="ico">🧱</span>① 노코드</h3><p><strong>Bubble</strong> 등 — 블록을 조립해 앱·서비스. UI·DB까지 시각적으로</p></div>
+            <div class="box green"><h3><span class="ico">🔄</span>② 자동화</h3><p><strong>Make · n8n</strong> — 앱·API를 연결하는 시나리오(트리거→액션)</p></div>
+            <div class="box purple"><h3><span class="ico">⌨️</span>③ 바이브 코딩</h3><p><strong>Cursor · Codex</strong> — 자연어로 코드를 짜게 하고 실행</p></div>
+          </div>
+          <table class="cmp">
+            <thead><tr><th>방법</th><th>강점</th><th>적합</th></tr></thead>
+            <tbody>
+              <tr><td>노코드</td><td>완성형 앱·UI</td><td>고객용 서비스·폼</td></tr>
+              <tr><td>자동화</td><td>앱 간 연결·반복</td><td>알림·수집·연동(6일차 MCP/Make)</td></tr>
+              <tr><td>바이브 코딩</td><td>자유도·확장성</td><td>맞춤 도구·대시보드(8일차)</td></tr>
+            </tbody>
+          </table>
+          <div class="tip"><b>오늘 초점</b> — 바이브 코딩(Stitch·v0)과 Google AI Studio. 자동화(Make)는 6일차, 본격 코딩 배포는 8일차에서 심화.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="4. Agent 이해">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">4-4</span>주요 Agent 제작 서비스 비교</h2>
+        <div class="slide-inner">
+          <p class="sub">무엇을 언제 — 5개 서비스의 강점·용도</p>
+          <table class="cmp">
+            <thead><tr><th>서비스</th><th>유형</th><th>강점 / 이럴 때</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Bubble</strong></td><td>노코드 앱</td><td>DB·로그인 갖춘 완성형 웹앱</td></tr>
+              <tr><td><strong>Stitch</strong></td><td>UI 생성</td><td>자연어→디자인, HTML/CSS·Figma(5-1)</td></tr>
+              <tr><td><strong>v0</strong></td><td>프로토타입</td><td>작동하는 화면·즉시 배포(5-4)</td></tr>
+              <tr><td><strong>Google AI Studio</strong></td><td>Agent 빌드</td><td>Gemini로 앱·자동화, 시트 연동(섹션6)</td></tr>
+              <tr><td><strong>Claude</strong></td><td>제작 보조</td><td>긴 코드·문서, Artifacts·Skills(7일차)</td></tr>
+            </tbody>
+          </table>
+          <div class="tip"><b>전략</b> — 하나로 다 하려 말고 <b>역할 분담</b>: 디자인=Stitch, 프로토타입·배포=v0, 데이터 연동 Agent=AI Studio.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="4. Agent 이해">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">4-5</span>사내 활용 사례 (지피티코리아)</h2>
+        <div class="slide-inner">
+          <p class="sub">실제 회사가 Agent·AI로 무엇을 자동화했나</p>
+          <div class="grid2">
+            <div class="box purple"><h3><span class="ico">🌐</span>홈페이지 제작</h3><p>바이브 코딩으로 랜딩·소개 페이지를 빠르게 제작·배포</p></div>
+            <div class="box purple"><h3><span class="ico">💬</span>CS 자동화</h3><p>자주 묻는 문의를 Agent가 1차 응대·분류</p></div>
+            <div class="box purple"><h3><span class="ico">📊</span>광고 보고</h3><p>광고 성과 수집·집계·리포트 자동 생성</p></div>
+            <div class="box purple"><h3><span class="ico">🗂️</span>커리큘럼 관리</h3><p>교육 일정·자료를 Agent로 정리·배포(이 강의처럼)</p></div>
+          </div>
+          <div class="lead"><b>시사점</b> — 거창한 게 아니라 <strong>‘매일 반복하는 작은 일’</strong>부터. 한 가지 업무를 Agent로 옮기면 시간이 쌓여 자산이 된다.</div>
+          <div class="lead green"><b>섹션 4 정리</b> — Agent는 ‘자율 실행 AI’. 비개발자는 노코드·자동화·바이브 코딩 3길로 접근. 다음 섹션부터 <strong>직접 제작</strong> 시작.</div>
+        </div>
+      </section>
+
+      <!-- ===== 섹션 05 divider ===== -->
+      <section class="slide divider" data-sec="5. 바이브 코딩">
+        <div class="slide-inner">
+          <span class="part-tag" style="color:var(--purple);border-color:var(--purple)">PART 2 · 비개발자 Agent 제작</span>
+          <div class="big-num">05</div>
+          <h2 class="heading">다양한 바이브 코딩 툴 활용 (Stitch · v0)</h2>
+          <p class="sub">자연어로 디자인하고 → 작동하는 프로토타입으로 → 한 번에 배포 (5-1 ~ 5-6)</p>
+          <div class="agenda">
+            <span class="pill on">5-1 Stitch 소개</span>
+            <span class="pill">5-2 EDM 페이지</span>
+            <span class="pill">5-3 목업 4종</span>
+            <span class="pill">5-4 v0 사례</span>
+            <span class="pill">5-5 Stitch→v0</span>
+            <span class="pill">5-6 Vercel 배포</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="5. 바이브 코딩">
+        <div class="slide-inner">
+          <span class="kicker green">개념</span>
+          <h2 class="heading">바이브 코딩(Vibe Coding)이란?</h2>
+          <p class="sub">‘어떻게 만들지’가 아니라 ‘무엇을 원하는지’를 말하면 AI가 코드를 만든다</p>
+          <div class="flow">
+            <span class="node on">자연어 설명</span><span class="arr">→</span>
+            <span class="node">AI가 디자인/코드</span><span class="arr">→</span>
+            <span class="node">미리보기·수정</span><span class="arr">→</span>
+            <span class="node">배포</span>
+          </div>
+          <div class="grid2" style="margin-top:10px">
+            <div class="box pink"><h3><span class="ico">🎨</span>Stitch</h3><p>구글의 UI 디자인 생성 — 자연어→화면 디자인, HTML/CSS·Figma 연동</p></div>
+            <div class="box accent"><h3><span class="ico">⚡</span>v0</h3><p>Vercel의 프로토타입 도구 — 작동하는 컴포넌트·페이지, 즉시 배포</p></div>
+          </div>
+          <div class="tip"><b>조합</b> — Stitch로 ‘예쁜 디자인’을, v0로 ‘작동·배포’를. 디자인→프로토타입→공개 URL까지 한 흐름.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="5. 바이브 코딩">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">5-1</span>Stitch 소개 및 활용 방식</h2>
+        <div class="slide-inner">
+          <p class="sub">자연어로 화면을 디자인하고, 결과를 코드·Figma로 가져온다</p>
+          <div class="grid3">
+            <div class="box pink"><h3><span class="ico">💬</span>자연어 생성</h3><p>“교육 신청 랜딩 페이지” 한 줄로 화면 디자인</p></div>
+            <div class="box pink"><h3><span class="ico">🔗</span>Figma 연동</h3><p>디자이너와 협업 — 디자인 핸드오프</p></div>
+            <div class="box pink"><h3><span class="ico">🧾</span>HTML/CSS 변환</h3><p>코드로 추출해 바로 웹에 사용</p></div>
+          </div>
+          <div class="prompt"><span class="label">Stitch 프롬프트 예시</span>부동산 분양 교육 신청 랜딩 페이지를 디자인해줘.
+- 상단 히어로(제목·일정·신청 버튼)
+- 커리큘럼 카드 그리드, 강사 소개, FAQ, 푸터
+- 톤: 신뢰감 있는 다크 네이비 + 포인트 블루, 모바일 대응</div>
+          <div class="tip"><b>핵심</b> — 화면 ‘구성요소’와 ‘톤’을 함께 말한다. 디자인이 나오면 “더 미니멀하게”처럼 대화로 조정.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="5. 바이브 코딩">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">5-2</span>EDM 페이지 제작</h2>
+        <div class="slide-inner">
+          <p class="sub">기존 EDM 캡처 + 기획안을 입력해 홍보용 EDM 페이지를 자동 생성</p>
+          <div class="steps pink">
+            <li>참고할 EDM(이메일 홍보물) 캡처 이미지 업로드</li>
+            <li>기획안(목적·핵심 메시지·CTA) 텍스트 입력</li>
+            <li>Stitch가 레이아웃·카피 자리 포함 EDM 생성</li>
+            <li>브랜드 색·문구 다듬어 완성</li>
+          </div>
+          <div class="prompt"><span class="label">프롬프트</span>[첨부] 참고 EDM 캡처
+[기획안] 목적=분양 사전예약 유도 / 타겟=3040 실수요 /
+         핵심=역세권·남향·생애최초 대출 / CTA=사전예약 신청
+이 톤을 참고해 홍보용 EDM 페이지를 만들어줘. 모바일 우선, 버튼 강조.</div>
+          <div class="tip"><b>활용</b> — 뉴스레터·분양 안내 메일·이벤트 페이지를 디자이너 없이. 캡처 한 장이 ‘레퍼런스’가 된다.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="5. 바이브 코딩">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">5-3</span>모바일 앱 목업 4종 제작</h2>
+        <div class="slide-inner">
+          <p class="sub">일관된 스타일의 화면 시리즈 — 메인·기업소개·교육·리포트</p>
+          <div class="grid4">
+            <div class="box pink"><h3>메인</h3><p>핵심 진입·메뉴</p></div>
+            <div class="box pink"><h3>기업 소개</h3><p>브랜드·연혁·강점</p></div>
+            <div class="box pink"><h3>교육</h3><p>커리큘럼·신청</p></div>
+            <div class="box pink"><h3>리포트</h3><p>성과·데이터 뷰</p></div>
+          </div>
+          <div class="prompt"><span class="label">목업 시리즈 프롬프트</span>같은 디자인 시스템(색·서체·컴포넌트)으로 모바일 앱 화면 4종을 만들어줘.
+① 메인 ② 기업 소개 ③ 교육 신청 ④ 리포트(차트)
+- 일관된 네비게이션·카드 스타일, 9:16 모바일 뷰</div>
+          <div class="tip"><b>핵심</b> — “같은 디자인 시스템으로”를 명시해야 4종이 따로 놀지 않는다. 5일차 디자인 시스템 개념과 연결.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="5. 바이브 코딩">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">5-4</span>v0 활용 사례</h2>
+        <div class="slide-inner">
+          <p class="sub">디자인을 넘어 ‘작동하는 화면’과 문서까지</p>
+          <div class="grid3">
+            <div class="box accent"><h3><span class="ico">🧪</span>프로토타입</h3><p>클릭·입력이 되는 실제 작동 화면</p></div>
+            <div class="box accent"><h3><span class="ico">👀</span>UX/UI 테스트</h3><p>이해관계자에게 보여주고 피드백</p></div>
+            <div class="box accent"><h3><span class="ico">📄</span>문서 제작</h3><p>PPT·랜딩 등 다양한 산출물</p></div>
+          </div>
+          <div class="prompt"><span class="label">v0 프롬프트 예시</span>분양 상담 예약 폼이 있는 랜딩 페이지를 만들어줘.
+- 이름·연락처·관심 평형 입력, 제출 버튼
+- 제출하면 '신청 완료' 메시지
+- 반응형, 깔끔한 카드 UI</div>
+          <div class="tip"><b>차이</b> — Stitch=‘디자인(보이는 것)’, v0=‘작동(되는 것)’. 정적 시안이 아니라 <b>눌러볼 수 있는 시제품</b>.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="5. 바이브 코딩">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">5-5</span>Stitch 결과물 → v0 프로토타입 변환</h2>
+        <div class="slide-inner">
+          <p class="sub">디자인(Stitch)을 작동 프로토타입(v0)으로 이어 붙이는 실습</p>
+          <div class="steps blue">
+            <li>Stitch에서 만든 화면(HTML/CSS) <strong>8개 파일</strong> 추출</li>
+            <li>v0에 일괄 입력(붙여넣기/업로드)</li>
+            <li><strong>모바일 뷰</strong>로 전환·정렬</li>
+            <li>작동 화면(네비게이션·폼) 생성·확인</li>
+          </div>
+          <div class="flow">
+            <span class="node on">Stitch 디자인</span><span class="arr">→</span>
+            <span class="node">파일 추출(8개)</span><span class="arr">→</span>
+            <span class="node">v0 입력</span><span class="arr">→</span>
+            <span class="node">작동 프로토타입</span>
+          </div>
+          <div class="tip"><b>왜 변환?</b> — 디자인만으론 ‘보여주기’ 한계. v0로 옮기면 <b>실제 눌러보는 데모</b>가 되어 컨펌·테스트가 쉬워진다.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="5. 바이브 코딩">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">5-6</span>Vercel 즉시 배포</h2>
+        <div class="slide-inner">
+          <p class="sub">버튼 하나로 인터넷에 공개 — 공유 URL 획득</p>
+          <div class="steps green">
+            <li>v0 프로토타입에서 <strong>Publish(배포)</strong> 클릭</li>
+            <li>Vercel이 자동 빌드·배포</li>
+            <li>발급된 <strong>공개 URL</strong> 확인</li>
+            <li>링크 공유 → 누구나 접속</li>
+          </div>
+          <div class="lead green"><b>의미</b> — 이 강의 대시보드처럼, <strong>‘로컬 → 공개 웹’</strong>이 클릭 한 번. 기획자가 아이디어를 ‘살아있는 링크’로 즉시 증명한다.</div>
+          <div class="tip"><b>연결</b> — 8일차에선 Claude Code로 만든 대시보드를 GitHub·Vercel에 배포(지금 이 사이트가 그 결과물). 오늘은 그 ‘맛보기’.</div>
+          <div class="lead"><b>섹션 5 정리</b> — Stitch(디자인) → v0(작동) → Vercel(배포). <strong>비개발자가 ‘아이디어→공개 웹앱’을 하루 만에</strong>.</div>
+        </div>
+      </section>
+
+      <!-- ===== 섹션 06 divider ===== -->
+      <section class="slide divider" data-sec="6. AI Studio">
+        <div class="slide-inner">
+          <span class="part-tag" style="color:var(--purple);border-color:var(--purple)">PART 2 · 비개발자 Agent 제작</span>
+          <div class="big-num">06</div>
+          <h2 class="heading">Google AI Studio로 나만의 Agent 제작</h2>
+          <p class="sub">기획 → 빌드 → 스프레드시트 연동 → 배포까지, 실제 작동하는 업무 Agent (6-1 ~ 6-5)</p>
+          <div class="agenda">
+            <span class="pill on">6-1 Gemini로 기획</span>
+            <span class="pill">6-2 AI Studio Build</span>
+            <span class="pill">6-3 Apps Script 코드</span>
+            <span class="pill">6-4 배포·권한</span>
+            <span class="pill">6-5 연동·고도화·공유</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="6. AI Studio">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">6-1</span>Gemini로 Agent 기획 (영수증 OCR 사례)</h2>
+        <div class="slide-inner">
+          <p class="sub">만들기 전에 ‘설계’ — 서비스명·정의·사용자 흐름·화면 스타일을 단계별로</p>
+          <div class="steps">
+            <li><strong>서비스명·정의</strong> — “영수증 정리 도우미: 사진→경비 시트 자동 입력”</li>
+            <li><strong>사용자 행동 흐름</strong> — 영수증 촬영 → 업로드 → OCR → 시트 기록</li>
+            <li><strong>화면 스타일</strong> — 단순·모바일, 큰 업로드 버튼</li>
+            <li><strong>필요 기능 정의</strong> — OCR·날짜/금액 추출·시트 연동</li>
+          </div>
+          <div class="prompt"><span class="label">Gemini 기획 프롬프트</span>비개발자용 업무 Agent를 기획해줘. 아이디어: '영수증 사진을 올리면
+날짜·상호·금액을 인식해 구글 시트 경비 장부에 자동 기록'.
+① 서비스명·한 줄 정의 ② 사용자 행동 흐름(단계)
+③ 화면 구성·스타일 ④ 필요한 기능 목록 ⑤ 데이터 구조(시트 열)</div>
+          <div class="tip"><b>핵심</b> — 좋은 Agent는 ‘좋은 기획’에서. 흐름·데이터 구조를 먼저 정하면 빌드가 빨라진다.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="6. AI Studio">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">6-2</span>Google AI Studio — Build</h2>
+        <div class="slide-inner">
+          <p class="sub">기획안을 입력하면 Gemini가 작동하는 앱을 생성</p>
+          <div class="steps purple">
+            <li><span class="f">aistudio.google.com</span> ▸ <strong>Build</strong> 진입</li>
+            <li>모델 선택(<strong>Gemini 3 Pro Preview</strong> 등)</li>
+            <li>기획안(6-1)을 프롬프트로 입력 → 앱 생성</li>
+            <li>결과물 <strong>저장</strong>, <strong>프롬프트/Annotate</strong>로 수정</li>
+          </div>
+          <div class="grid2" style="margin-top:8px">
+            <div class="box accent"><h3><span class="ico">✏️</span>Annotate 수정</h3><p>화면의 특정 부분을 짚어 “여기를 이렇게” 직접 지시</p></div>
+            <div class="box purple"><h3><span class="ico">💾</span>버전 관리</h3><p>잘 된 상태를 저장하고, 실험 후 되돌리기</p></div>
+          </div>
+          <div class="tip"><b>Tip</b> — 한 번에 완성 X. <b>작은 단위로 만들고 → 확인 → 다음 기능</b>. 안 되면 에러를 그대로 붙여 되묻기(2일차 원리 동일).</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="6. AI Studio">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">6-3</span>Apps Script 코드 생성 (시트 연동)</h2>
+        <div class="slide-inner">
+          <p class="sub">Agent가 만든 코드를 구글 시트에 붙여 ‘자동 기록’을 연결</p>
+          <div class="code"><span class="label">Google Apps Script (자동 생성 예시)</span><span class="cmt">// 웹 앱이 받은 영수증 데이터를 시트에 한 줄 추가</span>
+<span class="kw">function</span> <span class="fn">doPost</span>(e) {
+  <span class="kw">const</span> sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(<span class="str">"경비"</span>);
+  <span class="kw">const</span> data = JSON.parse(e.postData.contents);
+  sheet.appendRow([<span class="kw">new</span> Date(), data.상호, data.금액, data.항목]);
+  <span class="kw">return</span> ContentService.createTextOutput(
+    JSON.stringify({ result: <span class="str">"ok"</span> }));
+}</div>
+          <div class="steps green">
+            <li>구글 시트 ▸ 확장 프로그램 ▸ <strong>Apps Script</strong></li>
+            <li>빈 편집기에 Agent가 준 코드 붙여넣기</li>
+            <li>저장 후 다음 단계(배포)로</li>
+          </div>
+          <div class="tip"><b>안심</b> — 코드 한 줄도 직접 안 짠다. Agent가 생성 → 복사 → 붙여넣기. 오류 시 메시지를 그대로 Agent에 되묻는다.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="6. AI Studio">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">6-4</span>웹 앱 배포 · 권한 설정</h2>
+        <div class="slide-inner">
+          <p class="sub">Apps Script를 ‘웹 앱’으로 배포하고 접근 권한을 설정</p>
+          <div class="steps purple">
+            <li>Apps Script ▸ <strong>배포 ▸ 새 배포 ▸ 웹 앱</strong></li>
+            <li><strong>실행 계정</strong>: ‘나’(소유자)로</li>
+            <li><strong>액세스 범위</strong>: 용도에 맞게(나만 / 도메인 / 모두)</li>
+            <li>권한 승인 — <span class="warn">‘미검증 앱’ 경고</span> 시 고급 ▸ 계속 진행</li>
+            <li>배포 완료 → <strong>웹 앱 URL</strong> 발급</li>
+          </div>
+          <div class="box amber" style="margin-top:8px"><h3><span class="ico">⚠️</span>‘미검증 앱’ 경고</h3><p>내가 만든 개인 스크립트라 뜨는 정상 경고. <strong>출처가 본인일 때만</strong> 진행. 타인 스크립트엔 신중히.</p></div>
+          <div class="tip warn"><b>보안</b> — 액세스 범위를 넓게(‘모두’) 두면 누구나 데이터에 쓸 수 있다. 내부용은 ‘나/도메인’으로 최소화.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="6. AI Studio">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">6-5</span>URL 연동 · 기능 고도화 · 공유</h2>
+        <div class="slide-inner">
+          <p class="sub">웹 앱 URL을 Agent에 연결해 ‘끝까지 작동’하게 만들고 공유</p>
+          <div class="flow">
+            <span class="node on">웹 앱 URL</span><span class="arr">→</span>
+            <span class="node">Agent에 연동</span><span class="arr">→</span>
+            <span class="node">기능 보완</span><span class="arr">→</span>
+            <span class="node">Public 공유</span>
+          </div>
+          <div class="steps green" style="margin-top:10px">
+            <li>발급된 웹 앱 URL을 Agent(앱)에 입력·연결</li>
+            <li>전체 흐름 테스트(영수증→인식→시트 기록)</li>
+            <li>추가 기능 보완(카테고리 자동 분류 등)</li>
+            <li><strong>Public 링크 활성화</strong> → 팀과 공유</li>
+          </div>
+          <div class="lead green"><b>섹션 6 정리</b> — 기획(Gemini) → 빌드(AI Studio) → 코드(Apps Script) → 배포·권한 → 연동·공유. <strong>코딩 0으로 ‘진짜 작동하는 업무 Agent’</strong>를 완성·배포했다.</div>
+        </div>
+      </section>
+
+      <!-- ===== 섹션 07 divider ===== -->
+      <section class="slide divider" data-sec="7. 안전 운영">
+        <div class="slide-inner">
+          <span class="part-tag" style="color:var(--purple);border-color:var(--purple)">PART 2 · 비개발자 Agent 제작</span>
+          <div class="big-num">07</div>
+          <h2 class="heading">Agent를 안전하고 지속가능하게 활용하기</h2>
+          <p class="sub">만드는 것만큼 중요한 ‘잘 쓰는 법’ — 설계 원칙·윤리·프롬프트 자산화 (7-1 ~ 7-4)</p>
+          <div class="agenda">
+            <span class="pill on">7-1 설계 3원칙</span>
+            <span class="pill">7-2 저작권·윤리</span>
+            <span class="pill">7-3 프롬프트 자산화</span>
+            <span class="pill">7-4 팀 라이브러리</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="7. 안전 운영">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">7-1</span>성공적인 Agent 설계 3원칙</h2>
+        <div class="slide-inner">
+          <p class="sub">멋진 Agent보다 ‘오래 쓰이는’ Agent</p>
+          <div class="grid3">
+            <div class="box purple"><h3><span class="ico">🎯</span>① 목적 중심</h3><p>‘무엇을 위해’가 명확. 기능을 욕심내지 말고 <strong>한 문제를 확실히</strong> 해결</p></div>
+            <div class="box amber"><h3><span class="ico">💸</span>② 운영 비용 이해</h3><p>API 호출·토큰엔 비용. 사용량·호출 빈도를 <strong>예측·관리</strong></p></div>
+            <div class="box pink"><h3><span class="ico">🔐</span>③ 보안 고려</h3><p><strong>API Key·개인정보</strong> 노출 차단. 권한 최소화·키 분리</p></div>
+          </div>
+          <div class="lead"><b>현실 점검</b> — “돼요?”보다 <strong>“계속 쓸 수 있어요?”</strong>. 비용이 새거나 키가 노출되면 좋은 Agent도 중단된다.</div>
+          <div class="tip warn"><b>키 관리 체크</b> — 코드에 키 하드코딩 ✗ · 공개 저장소 업로드 ✗ · 액세스 범위 최소화 · 미사용 키 삭제(2일차 원칙 동일).</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="7. 안전 운영">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">7-2</span>생성 AI 저작권 · 사용 윤리</h2>
+        <div class="slide-inner">
+          <p class="sub">합법·윤리적으로 — 특히 부동산 ‘고객 데이터’를 다룰 때</p>
+          <div class="grid2">
+            <div class="box accent"><h3><span class="ico">⚖️</span>저작권·사용</h3><ul><li>도구별 <strong>상업 사용 라이선스</strong> 확인</li><li><strong>동의 기반</strong> 데이터만 사용</li><li>인용·생성물 <strong>출처 표시</strong></li></ul></div>
+            <div class="box green"><h3><span class="ico">🛡️</span>개인정보 4원칙</h3><ul><li>최소 수집(필요한 것만)</li><li>목적 내 사용</li><li>안전 보관(암호화·접근통제)</li><li>보유기간 후 파기</li></ul></div>
+          </div>
+          <div class="lead green"><b>실무 기준</b> — 고객 명단·연락처·계약 정보는 <strong>식별정보 제거 후</strong> 또는 사내 승인된 환경에서만. ‘편해서’ 외부 AI에 그대로 붙여넣지 않는다.</div>
+          <div class="tip warn"><b>광고 윤리</b> — 분양 수익률·확정 표현은 과장·허위 광고 리스크. ‘추정·기대’ 명시 + 근거·면책 병기.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="7. 안전 운영">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">7-3</span>프롬프트 관리 · 공유의 가치</h2>
+        <div class="slide-inner">
+          <p class="sub">잘 만든 프롬프트는 ‘일회용’이 아니라 ‘자산’이다</p>
+          <div class="grid2">
+            <div class="box purple"><h3><span class="ico">📈</span>왜 자산화?</h3><ul><li>사용법 습득 가속</li><li>답변 <strong>일관성</strong> 확보</li><li>지속적 개선(버전업)</li><li>조직 내 공동 학습</li></ul></div>
+            <div class="box"><h3><span class="ico">🗃️</span>무엇을 저장?</h3><ul><li>잘 작동한 프롬프트 원문</li><li>용도·입력 예시·주의점</li><li>개선 이력(왜 바꿨나)</li></ul></div>
+          </div>
+          <div class="lead"><b>핵심</b> — 한 사람이 찾아낸 ‘좋은 질문’을 <strong>팀 전체가 재사용</strong>하면, 개인의 노하우가 조직의 역량이 된다. 오늘 만든 모든 프롬프트가 후보.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="7. 안전 운영">
+        <h2 class="heading" style="max-width:1000px;margin:0 auto;width:100%"><span class="num">7-4</span>팀 단위 프롬프트 라이브러리</h2>
+        <div class="slide-inner">
+          <p class="sub">흩어진 프롬프트를 한 곳에 — 카테고리별로 누적·공유</p>
+          <table class="cmp">
+            <thead><tr><th>카테고리</th><th>프롬프트 예 (오늘 자료에서)</th></tr></thead>
+            <tbody>
+              <tr><td>데이터 분석</td><td>CTR·ROI 분석 / 한글 차트 시각화</td></tr>
+              <tr><td>타겟·카피</td><td>페르소나 / A/B 광고 문구 / 반응 시뮬</td></tr>
+              <tr><td>보고서</td><td>3단 구조 본문 / 경쟁 비교 / 로드맵</td></tr>
+              <tr><td>Agent 제작</td><td>Agent 기획 / Apps Script 연동</td></tr>
+            </tbody>
+          </table>
+          <div class="steps green" style="margin-top:8px">
+            <li>공유 문서·노션·시트에 <strong>카테고리별 템플릿</strong> 누적</li>
+            <li>각 프롬프트에 용도·예시·주의 메모</li>
+            <li><strong>주간 베스트 프롬프트</strong> 공유·표준화</li>
+          </div>
+          <div class="lead green"><b>섹션 7 정리</b> — 설계 3원칙 → 윤리·보안 → 프롬프트 자산화 → 팀 라이브러리. <strong>‘만들고 끝’이 아니라 ‘안전하게, 함께, 오래’</strong>가 진짜 생산성.</div>
+        </div>
+      </section>
+
+      <!-- ===== 마무리 ===== -->
+      <section class="slide" data-sec="마무리">
+        <div class="slide-inner">
+          <span class="kicker green">WRAP-UP</span>
+          <h2 class="heading">오늘 핵심 7가지</h2>
+          <ul class="points">
+            <li><strong>데이터 분석</strong> — 코드 대신 ‘질문’으로 CTR·ROI·분양성과 분석, 한글 차트까지</li>
+            <li><strong>타겟 마케팅</strong> — 페르소나 → 키워드 → A/B 카피 → 반응 시뮬로 가설 검증</li>
+            <li><strong>분양 보고서</strong> — 도입·경쟁·페르소나·본문(3단 구조)·로드맵으로 한 편 완성</li>
+            <li><strong>Agent 이해</strong> — ‘자율 실행 AI’, 3인 8시간 → 1인 30분</li>
+            <li><strong>바이브 코딩</strong> — Stitch(디자인) → v0(작동) → Vercel(배포)</li>
+            <li><strong>AI Studio Agent</strong> — 기획→빌드→Apps Script→배포로 진짜 작동 Agent</li>
+            <li><strong>안전 운영</strong> — 설계 3원칙·윤리·보안·프롬프트 자산화</li>
+          </ul>
+          <div class="lead"><b>관통하는 원리</b> — 오전엔 <span class="pp">AI를 ‘분석가’</span>로, 오후엔 <span class="pp">‘개발자’</span>로 썼다. 비개발자가 <strong>분석부터 자동화 도구 제작·배포까지</strong> 혼자 해내는 날.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="마무리">
+        <div class="slide-inner">
+          <span class="kicker amber">CHEAT SHEET</span>
+          <h2 class="heading">바로 쓰는 치트시트</h2>
+          <div class="grid2">
+            <div class="prompt" style="margin-top:0"><span class="label">데이터 분석 위임</span>첨부 데이터로 (지표: CTR/ROI/분양률) 계산해
+상·하위·이상치를 표로, 한글 깨짐 없는 차트로,
+그리고 '그래서 무엇을 할지' 전략·KPI까지 제안해줘.</div>
+            <div class="prompt" style="margin-top:0"><span class="label">보고서 3단 구조</span>(항목)을 '분석(사실)→해석(의미)→시사점(전략)'
+3단 구조로 써줘. 각 항목 끝에 핵심 한 줄.
+결론부터, 표·불릿, 임원 보고 톤.</div>
+          </div>
+          <div class="grid2">
+            <div class="box purple"><h3><span class="ico">🤖</span>Agent 제작 흐름</h3><p>기획(Gemini) → 빌드(AI Studio) → 코드(Apps Script) → 배포·권한 → 연동·공유</p></div>
+            <div class="box amber"><h3><span class="ico">⚖️</span>꼭 지킬 것</h3><p>API Key 비공개 · 개인정보 최소·동의·파기 · 수익률 ‘추정’ 표시 · 출처 표시</p></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide divider" data-sec="마무리">
+        <div class="slide-inner">
+          <span class="kicker">DAY 4 · 끝</span>
+          <h1 class="title">수고하셨습니다 👏</h1>
+          <p class="sub">오늘 만든 분석·보고서·Agent를 내 실제 업무 데이터로 한 번씩 돌려보세요.</p>
+          <div class="lead" style="margin-top:14px"><b>다음 시간(5일차)</b> — 리서치 AI 6종 & 분양 마케팅 자동화로 이어집니다.</div>
+          <div style="margin-top:18px"><a class="home" href="index.html" style="font-size:14px;color:var(--purple)">← 전체 커리큘럼으로 돌아가기</a></div>
+        </div>
+      </section>
+
+    </div><!-- /stage -->
+
+    <div class="nav">
+      <a class="home" href="index.html">⌂ 커리큘럼</a>
+      <button class="navbtn" id="prev" aria-label="이전">‹</button>
+      <div class="progress"><div class="bar" id="bar"></div></div>
+      <button class="navbtn" id="next" aria-label="다음">›</button>
+      <div class="counter" id="counter">1 / 1</div>
+    </div>
+  </div>
+
+  <div class="hint" id="hint">← → 방향키로 이동 · F 전체화면</div>
+
+  <script>
+    const slides = Array.from(document.querySelectorAll('.slide'));
+    const bar = document.getElementById('bar');
+    const counter = document.getElementById('counter');
+    const secLabel = document.getElementById('secLabel');
+    const prevBtn = document.getElementById('prev');
+    const nextBtn = document.getElementById('next');
+    const hint = document.getElementById('hint');
+    let idx = 0;
+    function render() {
+      slides.forEach((s, i) => s.classList.toggle('active', i === idx));
+      const total = slides.length;
+      bar.style.width = ((idx + 1) / total * 100) + '%';
+      counter.textContent = (idx + 1) + ' / ' + total;
+      secLabel.textContent = slides[idx].dataset.sec || '';
+      prevBtn.disabled = idx === 0;
+      nextBtn.disabled = idx === total - 1;
+      slides[idx].scrollTop = 0;
+      if (location.hash !== '#' + (idx + 1)) history.replaceState(null, '', '#' + (idx + 1));
+    }
+    function go(n) { idx = Math.max(0, Math.min(slides.length - 1, n)); render(); }
+    prevBtn.addEventListener('click', () => go(idx - 1));
+    nextBtn.addEventListener('click', () => go(idx + 1));
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') { e.preventDefault(); go(idx + 1); }
+      else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); go(idx - 1); }
+      else if (e.key === 'Home') { go(0); }
+      else if (e.key === 'End') { go(slides.length - 1); }
+      else if (e.key === 'f' || e.key === 'F') { if (!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); }
+    });
+    const sectionStart = {};
+    slides.forEach((s, i) => { const sec = s.dataset.sec; if (sec && !(sec in sectionStart)) sectionStart[sec] = i; });
+    const tocData = [
+      ['1','데이터 분석·인사이트','CTR·ROI·분양성과·Search·Perplexity','PART 1','1. 데이터 분석'],
+      ['2','AI 타겟 마케팅 기획','페르소나·키워드·A/B 광고문구','PART 1','2. 타겟 마케팅'],
+      ['3','분양 기획 보고서(최종)','시장·경쟁·페르소나·로드맵','PART 1','3. 분양 보고서'],
+      ['4','Agent 이해·적용','정의·As-Is/To-Be·서비스 비교','PART 2','4. Agent 이해'],
+      ['5','바이브 코딩(Stitch·v0)','UI 생성·프로토타입·Vercel 배포','PART 2','5. 바이브 코딩'],
+      ['6','Google AI Studio Agent','Gemini 기획·Build·Apps Script','PART 2','6. AI Studio'],
+      ['7','안전·지속가능 활용','설계 3원칙·윤리·프롬프트 자산화','PART 2','7. 안전 운영'],
+    ];
+    const tocEl = document.getElementById('toc');
+    tocData.forEach(([n, t, d, pl, sec]) => {
+      const li = document.createElement('li');
+      li.innerHTML = `<span class="n">${n}</span><span><span class="pl">${pl}</span><br/><span class="t">${t}</span><br/><span class="d">${d}</span></span>`;
+      li.addEventListener('click', () => { if (sec in sectionStart) go(sectionStart[sec]); });
+      tocEl.appendChild(li);
+    });
+    const startHash = parseInt(location.hash.replace('#', ''), 10);
+    if (startHash && startHash >= 1 && startHash <= slides.length) idx = startHash - 1;
+    render();
+    setTimeout(() => { hint.style.transition = 'opacity 1s'; hint.style.opacity = '0'; }, 4000);
+  </script>
+</body>
+</html>
