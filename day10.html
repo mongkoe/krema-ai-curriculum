@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>10일차 · HyperFrames로 만드는 AI 영상 | KREMA</title>
+  <style>
+    :root {
+      --bg: #0f172a; --bg-soft: #1e293b; --card: #1e293b; --card-2: #273449;
+      --text: #e2e8f0; --text-dim: #9aa7ba; --accent: #38bdf8; --accent-strong: #0ea5e9;
+      --highlight: #f59e0b; --green: #34d399; --pink: #f472b6; --purple: #a78bfa;
+      --teal: #2dd4bf; --rose: #fb7185; --orange: #f97316; --indigo: #818cf8;
+      --gold: #fbbf24; --red: #f43f5e; --border: #334155; --code-bg: #0b1222;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      font-family: "Pretendard", "Malgun Gothic", -apple-system, BlinkMacSystemFont, sans-serif;
+      background: radial-gradient(1200px 700px at 50% -15%, #3a1422 0%, var(--bg) 55%);
+      color: var(--text); line-height: 1.6; overflow: hidden;
+    }
+    .deck { height: 100vh; display: flex; flex-direction: column; }
+    .stage { flex: 1; position: relative; overflow: hidden; }
+    .slide { position: absolute; inset: 0; padding: 48px clamp(24px, 6vw, 90px) 32px; overflow-y: auto; display: none; flex-direction: column; gap: 14px; animation: fade 0.35s ease; }
+    .slide.active { display: flex; }
+    @keyframes fade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .slide-inner { max-width: 1020px; margin: 0 auto; width: 100%; }
+
+    /* ===== 폰트 확대 (가독성) ===== */
+    .kicker { display: inline-block; font-size: 13.5px; font-weight: 700; letter-spacing: 0.12em; color: var(--red); border: 1px solid var(--red); border-radius: 999px; padding: 5px 14px; margin-bottom: 15px; }
+    .kicker.amber { color: var(--highlight); border-color: var(--highlight); }
+    .kicker.green { color: var(--green); border-color: var(--green); }
+    .kicker.pink  { color: var(--pink);  border-color: var(--pink); }
+    .kicker.blue  { color: var(--accent); border-color: var(--accent); }
+
+    h1.title { font-size: clamp(30px, 5vw, 46px); font-weight: 800; letter-spacing: -0.02em; line-height: 1.2; margin-bottom: 13px; }
+    h2.heading { font-size: clamp(23px, 3.4vw, 32px); font-weight: 800; letter-spacing: -0.02em; line-height: 1.25; margin-bottom: 5px; }
+    h2.heading .num { color: var(--red); margin-right: 10px; font-variant-numeric: tabular-nums; }
+    .sub { color: var(--text-dim); font-size: clamp(15px, 1.7vw, 18px); margin-bottom: 7px; }
+
+    p { font-size: clamp(15px, 1.6vw, 17px); }
+    strong { color: #fff; }
+    .hl { color: var(--highlight); font-weight: 700; }
+    .ac { color: var(--accent); font-weight: 700; }
+    .gr { color: var(--green); font-weight: 700; }
+    .rd { color: var(--red); font-weight: 700; }
+
+    ul.points { list-style: none; display: flex; flex-direction: column; gap: 9px; margin-top: 5px; }
+    ul.points > li { position: relative; padding-left: 27px; font-size: clamp(15px, 1.6vw, 17px); }
+    ul.points > li::before { content: ""; position: absolute; left: 5px; top: 10px; width: 9px; height: 9px; border-radius: 50%; background: var(--red); }
+    ul.points ul { list-style: none; margin-top: 7px; padding-left: 4px; display: flex; flex-direction: column; gap: 6px; }
+    ul.points ul li { position: relative; padding-left: 19px; color: var(--text-dim); font-size: 15px; }
+    ul.points ul li::before { content: "–"; position: absolute; left: 2px; color: var(--text-dim); }
+
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; margin-top: 9px; }
+    .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 13px; margin-top: 9px; }
+    .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 11px; margin-top: 9px; }
+    .grid5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 9px; margin-top: 9px; }
+
+    .box { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 15px 17px; }
+    .box h3 { font-size: 15.5px; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+    .box .ico { font-size: 18px; }
+    .box p, .box li { font-size: 14.5px; color: var(--text-dim); }
+    .box ul { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+    .box ul li { position: relative; padding-left: 16px; }
+    .box ul li::before { content: "·"; position: absolute; left: 3px; color: var(--red); font-weight: 700; }
+    .box.accent { border-color: var(--accent); }
+    .box.amber  { border-color: var(--highlight); background: rgba(245,158,11,0.06); }
+    .box.green  { border-color: var(--green); }
+    .box.pink   { border-color: var(--pink); }
+    .box.purple { border-color: var(--purple); }
+    .box.red    { border-color: var(--red); background: rgba(244,63,94,0.06); }
+    .box.sm h3 { font-size: 13.5px; }
+    .box.sm p { font-size: 12.5px; }
+
+    .lead { background: linear-gradient(180deg, rgba(244,63,94,0.10), rgba(244,63,94,0.02)); border: 1px solid var(--red); border-radius: 14px; padding: 13px 17px; font-size: clamp(15px, 1.6vw, 16.5px); margin: 5px 0; }
+    .lead b { color: var(--red); }
+    .lead.blue { background: linear-gradient(180deg, rgba(56,189,248,0.10), rgba(56,189,248,0.02)); border-color: var(--accent); }
+    .lead.blue b { color: var(--accent); }
+    .lead.green { background: linear-gradient(180deg, rgba(52,211,153,0.10), rgba(52,211,153,0.02)); border-color: var(--green); }
+    .lead.green b { color: var(--green); }
+
+    .steps { counter-reset: step; display: flex; flex-direction: column; gap: 9px; margin-top: 5px; }
+    .steps li { list-style: none; position: relative; padding-left: 39px; font-size: 15px; min-height: 27px; display: flex; align-items: center; }
+    .steps li::before { counter-increment: step; content: counter(step); position: absolute; left: 0; top: 0; width: 27px; height: 27px; border-radius: 50%; background: var(--red); color: #fff; font-weight: 800; font-size: 13.5px; display: flex; align-items: center; justify-content: center; }
+    .steps.blue li::before { background: var(--accent); }
+    .steps.green li::before { background: var(--green); }
+    .steps.purple li::before { background: var(--purple); }
+
+    /* 프롬프트 (앰버) */
+    .prompt { background: var(--code-bg); border: 1px solid var(--border); border-left: 3px solid var(--highlight); border-radius: 10px; padding: 13px 15px; margin-top: 10px; font-family: "D2Coding", "Consolas", monospace; font-size: 14px; color: #cdd7e5; white-space: pre-wrap; line-height: 1.62; }
+    .prompt .label { display: block; font-family: "Pretendard", sans-serif; font-size: 12.5px; font-weight: 700; letter-spacing: 0.06em; color: var(--highlight); margin-bottom: 6px; }
+
+    /* 코드 (초록) */
+    .code { background: var(--code-bg); border: 1px solid var(--border); border-left: 3px solid var(--green); border-radius: 10px; padding: 13px 15px; margin-top: 10px; font-family: "D2Coding", "Consolas", monospace; font-size: 14px; color: #dbe3f0; white-space: pre; overflow-x: auto; line-height: 1.68; }
+    .code .label { display: block; font-family: "Pretendard", sans-serif; font-size: 12.5px; font-weight: 700; letter-spacing: 0.06em; color: var(--green); margin-bottom: 6px; }
+    .code .cmt { color: #6b7a90; }
+    .code .kw  { color: #38bdf8; }
+    .code .str { color: #fbbf24; }
+    .code .fn  { color: #f472b6; }
+    .code .num { color: #a78bfa; }
+
+    /* 워크플로 */
+    .flow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 11px; }
+    .flow .node { background: var(--card); border: 1px solid var(--border); border-radius: 9px; padding: 8px 14px; font-size: 14px; font-weight: 600; color: var(--text); }
+    .flow .node.on { border-color: var(--red); color: var(--red); }
+    .flow .arr { color: var(--text-dim); font-size: 16px; }
+
+    .tip { font-size: 14px; color: var(--text-dim); margin-top: 8px; }
+    .tip b { color: var(--green); }
+    .warn { color: var(--highlight); }
+
+    table.cmp { width: 100%; border-collapse: collapse; margin-top: 9px; font-size: 14.5px; }
+    table.cmp th, table.cmp td { border: 1px solid var(--border); padding: 9px 12px; text-align: left; vertical-align: top; }
+    table.cmp th { background: var(--card-2); color: #fff; font-weight: 700; }
+    table.cmp td { color: var(--text-dim); }
+    table.cmp tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
+    table.cmp code { font-family: "D2Coding", monospace; color: var(--red); font-size: 13.5px; }
+    table.cmp td:first-child { color: #fff; font-weight: 600; }
+
+    .f { font-family: "D2Coding", "Consolas", monospace; font-size: 0.93em; color: var(--red); background: rgba(244,63,94,0.08); border: 1px solid rgba(244,63,94,0.25); border-radius: 5px; padding: 1px 7px; }
+
+    .pill { display: inline-block; font-size: 13px; padding: 4px 12px; border-radius: 999px; border: 1px solid var(--border); color: var(--text-dim); margin: 2px 4px 2px 0; }
+    .pill.on { color: #fff; background: var(--red); border-color: var(--red); font-weight: 700; }
+
+    .divider { justify-content: center; align-items: flex-start; }
+    .divider .big-num { font-size: clamp(64px, 12vw, 134px); font-weight: 800; line-height: 1; color: transparent; -webkit-text-stroke: 2px var(--red); margin-bottom: 6px; }
+    .divider .part-tag { display: inline-block; font-size: 13px; font-weight: 700; letter-spacing: 0.09em; border-radius: 999px; padding: 4px 13px; margin-bottom: 13px; color: var(--red); border: 1px solid var(--red); }
+    .divider .part-tag.p2 { color: var(--accent); border-color: var(--accent); }
+    .divider .agenda { margin-top: 17px; display: flex; flex-wrap: wrap; gap: 8px; }
+
+    .toc { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 11px; margin-top: 11px; }
+    .toc li { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 13px 16px; display: flex; gap: 12px; align-items: flex-start; cursor: pointer; transition: border-color .15s ease, transform .15s ease, background .15s ease; }
+    .toc li:hover { border-color: var(--red); transform: translateY(-2px); background: var(--card-2); }
+    .toc .n { font-size: 20px; font-weight: 800; color: var(--red); min-width: 26px; }
+    .toc .t { font-size: 15.5px; font-weight: 700; }
+    .toc .d { font-size: 13px; color: var(--text-dim); margin-top: 2px; }
+    .toc .pl { font-size: 11.5px; color: var(--accent); font-weight: 700; letter-spacing: .04em; }
+
+    .topbar { display: flex; align-items: center; justify-content: space-between; padding: 12px clamp(18px, 5vw, 40px); border-bottom: 1px solid var(--border); background: rgba(15,23,42,0.7); backdrop-filter: blur(6px); flex-shrink: 0; }
+    .topbar .brand { font-size: 14.5px; font-weight: 700; color: var(--text); }
+    .topbar .brand span { color: var(--red); }
+    .topbar .sec-label { font-size: 14px; color: var(--text-dim); }
+
+    .nav { display: flex; align-items: center; gap: 14px; padding: 10px clamp(18px, 5vw, 40px); border-top: 1px solid var(--border); background: rgba(15,23,42,0.7); backdrop-filter: blur(6px); flex-shrink: 0; }
+    .progress { flex: 1; height: 6px; background: var(--bg-soft); border-radius: 999px; overflow: hidden; }
+    .progress .bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--pink), var(--red)); transition: width .3s ease; }
+    .counter { font-size: 14.5px; color: var(--text-dim); font-variant-numeric: tabular-nums; min-width: 66px; text-align: center; }
+    .navbtn { width: 40px; height: 40px; border-radius: 10px; border: 1px solid var(--border); background: var(--card); color: var(--text); font-size: 19px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .15s ease, border-color .15s ease, color .15s ease; }
+    .navbtn:hover { background: var(--red); color: #fff; border-color: var(--red); }
+    .navbtn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .navbtn:disabled:hover { background: var(--card); color: var(--text); border-color: var(--border); }
+    .home { font-size: 14px; color: var(--text-dim); text-decoration: none; }
+    .home:hover { color: var(--red); }
+    .hint { position: fixed; bottom: 70px; left: 50%; transform: translateX(-50%); font-size: 13.5px; color: var(--text-dim); opacity: .7; pointer-events: none; }
+
+    @media (max-width: 720px) {
+      .grid2, .grid3, .grid4, .grid5, .toc { grid-template-columns: 1fr; }
+      .slide { padding: 28px 15px 24px; }
+      .hint { display: none; }
+      .code, .prompt { font-size: 12.8px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="deck">
+    <div class="topbar">
+      <div class="brand">KREMA · 생성형 AI 마케팅 기획 <span>10일차 · 최종</span></div>
+      <div class="sec-label" id="secLabel">표지</div>
+    </div>
+
+    <div class="stage" id="stage">
+
+      <!-- ===== 표지 ===== -->
+      <section class="slide active" data-sec="표지">
+        <div class="slide-inner">
+          <span class="kicker">DAY 10 · FINALE · 한국부동산마케팅협회</span>
+          <h1 class="title">HyperFrames로 만드는 AI 영상</h1>
+          <p class="sub">건설회관(서울 강남) · 사용 도구: Claude Code · FFmpeg · HyperFrames · ElevenLabs</p>
+          <div class="lead" style="margin-top:16px">
+            <b>오늘의 목표</b> — 코드로 ‘영상 설계도’를 쓰는 <strong>HyperFrames</strong>로 영상을 렌더링하고,
+            <strong>ElevenLabs</strong> 한국어 나레이션을 입혀 <strong>MP4</strong>로 완성·제출합니다. 10일 여정의 화려한 피날레.
+          </div>
+          <div class="grid2" style="margin-top:14px">
+            <div class="box red"><h3><span class="ico">🎬</span>PART 1 · 설치와 첫 영상</h3><p>HyperFrames 개요·FFmpeg·설치·영상 생성</p></div>
+            <div class="box accent"><h3><span class="ico">🎙️</span>PART 2 · 나레이션</h3><p>ElevenLabs 한국어 음성·영상 병합·MP4 제출</p></div>
+          </div>
+          <div class="tip" style="margin-top:13px"><b>준비물</b> — Claude Code, Node 환경(6~9일차 공통), ElevenLabs 계정. 영상 편집 경험 0이어도 OK.</div>
+        </div>
+      </section>
+
+      <!-- ===== 목차 ===== -->
+      <section class="slide" data-sec="목차">
+        <div class="slide-inner">
+          <span class="kicker">CONTENTS</span>
+          <h2 class="heading">오늘 다루는 6개 섹션 (2 PART)</h2>
+          <p class="sub">제목을 누르면 해당 섹션으로 바로 이동합니다.</p>
+          <ul class="toc" id="toc"></ul>
+        </div>
+      </section>
+
+      <!-- ===== 섹션 01 divider ===== -->
+      <section class="slide divider" data-sec="1. HyperFrames 개요">
+        <div class="slide-inner">
+          <span class="part-tag">PART 1 · 설치와 첫 영상</span>
+          <div class="big-num">01</div>
+          <h2 class="heading">HyperFrames 개요</h2>
+          <p class="sub">코드로 영상을 ‘설계’하는 새로운 방식</p>
+          <div class="agenda">
+            <span class="pill on">정의</span>
+            <span class="pill">작동 원리</span>
+            <span class="pill">전체 워크플로</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="1. HyperFrames 개요">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">1-1</span>HyperFrames란?</h2>
+        <div class="slide-inner">
+          <p class="sub">HeyGen이 공개한 오픈소스 영상 렌더링 프레임워크</p>
+          <div class="grid2">
+            <div class="box red"><h3><span class="ico">🎞️</span>정의</h3><p>HeyGen이 만든 <strong>오픈소스 영상 렌더링 프레임워크</strong>. 무료로 누구나 사용</p></div>
+            <div class="box accent"><h3><span class="ico">💡</span>핵심 원리</h3><p><strong>HTML/CSS/JS로 ‘영상 설계도’를 쓰면 → MP4로 렌더링</strong></p></div>
+          </div>
+          <div class="lead blue"><b>발상의 전환</b> — 타임라인을 마우스로 편집(프리미어)하는 대신, <strong>‘웹페이지 만들 듯 코드로 영상을 설계’</strong>한다. 8·9일차에 웹앱을 만든 그 방식이 영상 제작으로.</div>
+          <div class="tip"><b>왜 강력한가</b> — 코드라서 <b>자동화·반복·데이터 연동</b>이 쉽다. “100개 단지를 각각 다른 영상으로” 같은 대량 생성이 가능(노코드·MCP와 결합 여지).</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="1. HyperFrames 개요">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">1-2</span>작동 원리 — HTML/CSS/JS → MP4</h2>
+        <div class="slide-inner">
+          <p class="sub">웹 기술로 ‘장면’을 그리면, 그게 프레임이 되어 영상으로</p>
+          <div class="flow">
+            <span class="node on">HTML/CSS/JS 설계도</span><span class="arr">→</span>
+            <span class="node">브라우저로 장면 렌더</span><span class="arr">→</span>
+            <span class="node">프레임 캡처</span><span class="arr">→</span>
+            <span class="node on">FFmpeg로 MP4 합성</span>
+          </div>
+          <div class="code"><span class="label">영상 설계도 개념 (HTML/CSS)</span><span class="cmt">&lt;!-- 한 '장면'을 웹페이지처럼 설계 --&gt;</span>
+&lt;div class=<span class="str">"scene"</span>&gt;
+  &lt;h1 class=<span class="str">"title"</span>&gt;OO자이 분양 안내&lt;/h1&gt;
+  &lt;p class=<span class="str">"subtitle"</span>&gt;역세권 · 남향 · 6월 분양&lt;/p&gt;
+&lt;/div&gt;
+<span class="cmt">/* CSS 애니메이션이 곧 영상의 움직임 */</span>
+.title { animation: fadeIn <span class="num">1</span>s; }</div>
+          <div class="lead"><b>핵심</b> — 우리가 8일차에 만든 ‘HTML 대시보드’를 떠올리면 된다. 같은 웹 기술로 ‘움직이는 장면’을 만들고, FFmpeg가 그걸 <strong>영상 파일(MP4)</strong>로 굽는다.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="1. HyperFrames 개요">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">1-3</span>오늘의 전체 워크플로</h2>
+        <div class="slide-inner">
+          <p class="sub">설치 → 영상 → 음성 → 병합 → 제출</p>
+          <div class="grid5">
+            <div class="box red sm"><h3>① 설치</h3><p>FFmpeg·HyperFrames</p></div>
+            <div class="box red sm"><h3>② 영상</h3><p>설계도→렌더링</p></div>
+            <div class="box accent sm"><h3>③ 음성</h3><p>ElevenLabs</p></div>
+            <div class="box accent sm"><h3>④ 병합</h3><p>영상+나레이션</p></div>
+            <div class="box green sm"><h3>⑤ 제출</h3><p>MP4·드라이브</p></div>
+          </div>
+          <div class="flow" style="margin-top:14px">
+            <span class="node on">FFmpeg 설치</span><span class="arr">→</span>
+            <span class="node">HyperFrames 설치</span><span class="arr">→</span>
+            <span class="node">영상 생성</span><span class="arr">→</span>
+            <span class="node">ElevenLabs 음성</span><span class="arr">→</span>
+            <span class="node on">병합·MP4·제출</span>
+          </div>
+          <div class="lead green"><b>섹션 1 정리</b> — HyperFrames = ‘코드로 쓰는 영상’. 원리(HTML→MP4)를 알았으니, 이제 엔진(FFmpeg)부터 설치한다.</div>
+        </div>
+      </section>
+
+      <!-- ===== 섹션 02 divider ===== -->
+      <section class="slide divider" data-sec="2. FFmpeg">
+        <div class="slide-inner">
+          <span class="part-tag">PART 1 · 설치와 첫 영상</span>
+          <div class="big-num">02</div>
+          <h2 class="heading">FFmpeg 설치</h2>
+          <p class="sub">MP4 렌더링 엔진 — 영상·음성 처리의 표준 도구</p>
+          <div class="agenda">
+            <span class="pill on">FFmpeg란</span>
+            <span class="pill">설치</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="2. FFmpeg">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">2-1</span>FFmpeg란 + 설치</h2>
+        <div class="slide-inner">
+          <p class="sub">영상·음성을 자르고·붙이고·변환하는 ‘만능 미디어 엔진’</p>
+          <div class="grid2">
+            <div class="box red"><h3><span class="ico">⚙️</span>FFmpeg</h3><ul><li>영상·음성 처리 표준(무료·오픈소스)</li><li>프레임 → MP4 합성</li><li>영상+음성 <strong>병합</strong>(섹션 6)</li></ul></div>
+            <div class="box accent"><h3><span class="ico">🔗</span>HyperFrames와</h3><p>HyperFrames가 만든 장면을 <strong>FFmpeg가 MP4로 굽는다</strong>. 영상 제작의 ‘엔진’</p></div>
+          </div>
+          <div class="code"><span class="label">설치 (Claude Code가 도와줌)</span><span class="cmt"># Windows (winget) / Mac (brew) — 환경에 맞게</span>
+winget install ffmpeg
+brew install ffmpeg
+
+<span class="cmt"># 설치 확인</span>
+ffmpeg -version</div>
+          <div class="tip"><b>실전</b> — 설치 명령을 외울 필요 없다. Claude Code에 <b>“내 OS에 FFmpeg 설치해줘”</b>라고 하면 환경을 확인해 알맞게 설치·검증한다.</div>
+        </div>
+      </section>
+
+      <!-- ===== 섹션 03 divider ===== -->
+      <section class="slide divider" data-sec="3. HyperFrames 설치">
+        <div class="slide-inner">
+          <span class="part-tag">PART 1 · 설치와 첫 영상</span>
+          <div class="big-num">03</div>
+          <h2 class="heading">HyperFrames 설치</h2>
+          <p class="sub">Claude Code로 직접 설치</p>
+          <div class="agenda">
+            <span class="pill on">설치 방식</span>
+            <span class="pill">확인</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="3. HyperFrames 설치">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">3-1</span>Claude Code로 직접 설치</h2>
+        <div class="slide-inner">
+          <p class="sub">‘빈 폴더 + 저장소 + 확인 후 설치’ (9일차 원칙 동일)</p>
+          <div class="steps">
+            <li>새 <strong>빈 폴더</strong>에서 시작</li>
+            <li>HyperFrames 저장소를 Claude Code에 전달</li>
+            <li><strong>“무엇인지 확인·설명 후 설치”</strong> 요청</li>
+            <li>의존성(Node 패키지) 설치·확인</li>
+          </div>
+          <div class="prompt"><span class="label">Claude Code 프롬프트</span>HyperFrames(HeyGen 오픈소스 영상 프레임워크)를 이 빈 폴더에 설치하고 싶어.
+먼저 구조와 필요 조건을 설명한 뒤, FFmpeg가 연동되는지 확인하고,
+단계별로 설치·실행 준비를 도와줘.</div>
+          <div class="tip warn"><b>안전</b> — 외부 코드 설치는 ‘무엇을 하는지’ 확인 후. 의존성·실행 스크립트를 Claude가 설명하게 한 뒤 진행.</div>
+          <div class="lead green"><b>섹션 3 정리</b> — FFmpeg(엔진) + HyperFrames(프레임워크) 준비 완료. 드디어 첫 영상을 만든다.</div>
+        </div>
+      </section>
+
+      <!-- ===== 섹션 04 divider ===== -->
+      <section class="slide divider" data-sec="4. 영상 실습">
+        <div class="slide-inner">
+          <span class="part-tag">PART 1 · 설치와 첫 영상</span>
+          <div class="big-num">04</div>
+          <h2 class="heading">영상 실습 — 첫 렌더링</h2>
+          <p class="sub">최신 이슈를 온라인 서치해 영상으로</p>
+          <div class="agenda">
+            <span class="pill on">서치 → 설계도</span>
+            <span class="pill">브라우저 표시 → 렌더링</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="4. 영상 실습">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">4-1</span>최신 이슈 서치 → 영상 설계도</h2>
+        <div class="slide-inner">
+          <p class="sub">‘무엇을 담을지’를 AI가 조사하고, 영상 장면으로 구성</p>
+          <div class="flow">
+            <span class="node on">온라인 서치</span><span class="arr">→</span>
+            <span class="node">대본·장면 구성</span><span class="arr">→</span>
+            <span class="node on">HTML 설계도 생성</span>
+          </div>
+          <div class="prompt"><span class="label">영상 생성 프롬프트</span>'2026 수도권 분양 시장 핵심 이슈'를 온라인에서 조사해서,
+30초 분량 정보 영상으로 만들어줘.
+- 도입(타이틀) → 핵심 3가지(장면별 텍스트·차트) → 마무리(CTA)
+- HyperFrames 설계도(HTML/CSS), 깔끔한 모션, 브랜드 톤(다크+레드)</div>
+          <div class="lead"><b>통합의 정점</b> — 5일차(리서치)·3일차(영상 기획)·8일차(코드)가 한 흐름으로. <strong>조사 → 대본 → 영상 설계</strong>가 대화 한 번에.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="4. 영상 실습">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">4-2</span>브라우저 표시 → 렌더링</h2>
+        <div class="slide-inner">
+          <p class="sub">장면을 브라우저로 미리 보고, MP4로 굽는다</p>
+          <div class="flow">
+            <span class="node on">브라우저 미리보기</span><span class="arr">→</span>
+            <span class="node">수정·확인</span><span class="arr">→</span>
+            <span class="node on">FFmpeg 렌더링</span><span class="arr">→</span>
+            <span class="node">MP4</span>
+          </div>
+          <div class="steps green" style="margin-top:12px">
+            <li>설계도를 브라우저에서 <strong>장면으로 확인</strong>(움직임·타이밍)</li>
+            <li>어색하면 “이 장면 1초 더 길게”처럼 대화로 수정</li>
+            <li>완성되면 <strong>렌더링 명령</strong> → 프레임을 MP4로 합성</li>
+          </div>
+          <div class="lead"><b>핵심</b> — 8·9일차의 ‘로컬 실행 → 캡처 피드백 → 개선’ 루프가 영상에도 그대로. <strong>보면서 다듬는다</strong>. 다음 PART에서 목소리를 입힌다.</div>
+        </div>
+      </section>
+
+      <!-- ===== 섹션 05 divider ===== -->
+      <section class="slide divider" data-sec="5. ElevenLabs">
+        <div class="slide-inner">
+          <span class="part-tag p2">PART 2 · 나레이션</span>
+          <div class="big-num">05</div>
+          <h2 class="heading">ElevenLabs — 한국어 보이스와 Voice ID</h2>
+          <p class="sub">텍스트를 자연스러운 ‘사람 목소리’로</p>
+          <div class="agenda">
+            <span class="pill on">한국어 음성 합성</span>
+            <span class="pill">Voice ID</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="5. ElevenLabs">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">5-1</span>한국어 음성 합성</h2>
+        <div class="slide-inner">
+          <p class="sub">대본을 넣으면 자연스러운 한국어 나레이션이 나온다</p>
+          <div class="grid2">
+            <div class="box red"><h3><span class="ico">🎙️</span>ElevenLabs</h3><ul><li>고품질 <strong>한국어 TTS</strong>(음성 합성)</li><li>감정·속도·억양 조절</li><li>광고·영상 나레이션에 최적</li></ul></div>
+            <div class="box accent"><h3><span class="ico">🎯</span>분양 영상 활용</h3><ul><li>단지 소개 나레이션</li><li>모델하우스 도슨트(3·5일차)</li><li>숏폼 보이스오버</li></ul></div>
+          </div>
+          <div class="prompt"><span class="label">나레이션 스크립트 예</span>"강남 역세권, 전 세대 남향 설계.
+지금 OO자이가 여러분의 새로운 시작을 기다립니다.
+6월, 특별한 기회를 놓치지 마세요."
+→ 톤: 따뜻하고 신뢰감 있게, 약간 느린 속도</div>
+          <div class="tip"><b>팁</b> — 문장부호·줄바꿈으로 ‘쉬는 지점’을 조절. 숫자·영어는 발음이 어색할 수 있어 한글로 풀어쓰면 자연스럽다.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="5. ElevenLabs">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">5-2</span>Voice ID — 일관된 목소리 고정</h2>
+        <div class="slide-inner">
+          <p class="sub">여러 영상에 ‘같은 목소리’를 쓰려면 Voice ID로 지정</p>
+          <div class="grid2">
+            <div class="box red"><h3><span class="ico">🆔</span>Voice ID란</h3><p>각 목소리의 <strong>고유 식별자</strong>. 이 ID로 항상 같은 보이스를 호출</p></div>
+            <div class="box accent"><h3><span class="ico">🎚️</span>왜 중요</h3><p>시리즈·캠페인 영상의 <strong>‘브랜드 보이스’ 일관성</strong>. 영상마다 목소리가 바뀌면 안 됨</p></div>
+          </div>
+          <div class="code"><span class="label">Voice ID로 음성 생성 (개념)</span><span class="cmt"># 선택한 한국어 보이스의 ID를 지정</span>
+voice_id = <span class="str">"21m00Tcm4TlvDq8ikWAM"</span>
+text     = <span class="str">"강남 역세권, 전 세대 남향 설계..."</span>
+<span class="cmt"># → ElevenLabs API가 음성(mp3) 생성</span></div>
+          <div class="lead green"><b>섹션 5 정리</b> — ElevenLabs로 한국어 나레이션을, Voice ID로 일관성을. 4일차 ‘프롬프트 자산화’처럼 <strong>‘브랜드 보이스’도 자산</strong>. 이제 영상과 합친다.</div>
+        </div>
+      </section>
+
+      <!-- ===== 섹션 06 divider ===== -->
+      <section class="slide divider" data-sec="6. 나레이션 병합">
+        <div class="slide-inner">
+          <span class="part-tag p2">PART 2 · 나레이션</span>
+          <div class="big-num">06</div>
+          <h2 class="heading">나레이션 병합</h2>
+          <p class="sub">스크립트 → 음성 → 병합 → MP4 → 제출</p>
+          <div class="agenda">
+            <span class="pill on">병합 흐름</span>
+            <span class="pill">FFmpeg 병합</span>
+            <span class="pill">렌더·드라이브 제출</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="6. 나레이션 병합">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">6-1</span>스크립트 → 음성 → 영상 병합</h2>
+        <div class="slide-inner">
+          <p class="sub">영상(HyperFrames)과 음성(ElevenLabs)을 FFmpeg로 합친다</p>
+          <div class="flow">
+            <span class="node on">스크립트</span><span class="arr">→</span>
+            <span class="node">ElevenLabs 음성(mp3)</span><span class="arr">→</span>
+            <span class="node">HyperFrames 영상(mp4)</span><span class="arr">→</span>
+            <span class="node on">FFmpeg 병합</span>
+          </div>
+          <div class="code"><span class="label">FFmpeg 영상+음성 병합 명령</span><span class="cmt"># 영상(video.mp4)에 나레이션(voice.mp3)을 입힘</span>
+ffmpeg -i video.mp4 -i voice.mp3 \
+  -c:v copy -c:a aac -shortest \
+  final.mp4</div>
+          <div class="tip"><b>타이밍 맞추기</b> — 나레이션 길이에 맞춰 장면 시간을 조절(또는 그 반대). 안 맞으면 “음성 길이에 영상 맞춰줘”라고 Claude에 요청.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="6. 나레이션 병합">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">6-2</span>MP4 렌더링 → 구글 드라이브 제출</h2>
+        <div class="slide-inner">
+          <p class="sub">최종 영상을 굽고, 공유·제출까지</p>
+          <div class="steps green">
+            <li>최종 <strong>MP4 렌더링</strong>(해상도·비율 설정: 16:9 / 9:16)</li>
+            <li>미리보기로 <strong>음성·자막·타이밍 검수</strong></li>
+            <li>구글 <strong>드라이브 업로드</strong></li>
+            <li>공유 링크 생성 → <strong>제출</strong></li>
+          </div>
+          <div class="lead"><b>완성</b> — 코드로 영상을 설계하고, AI 목소리를 입혀, MP4로 구워 제출. <strong>촬영·편집·성우 없이</strong> 기획자 혼자 ‘영상 한 편’을 완성했다.</div>
+          <div class="lead green"><b>섹션 6 정리</b> — 스크립트 → 음성 → 병합 → MP4 → 제출. <strong>이미지(3일차) → 영상화 → 나레이션</strong>까지, 영상 제작의 풀 사이클을 코드로 자동화.</div>
+        </div>
+      </section>
+
+      <!-- ===== 마무리 ===== -->
+      <section class="slide" data-sec="마무리">
+        <div class="slide-inner">
+          <span class="kicker green">WRAP-UP · DAY 10</span>
+          <h2 class="heading">오늘 핵심 6가지</h2>
+          <ul class="points">
+            <li><strong>HyperFrames</strong> — HTML/CSS/JS로 ‘영상 설계도’를 써서 MP4로</li>
+            <li><strong>FFmpeg</strong> — 프레임→MP4, 영상+음성 병합 엔진</li>
+            <li><strong>설치</strong> — Claude Code로 빈 폴더에 확인 후 설치</li>
+            <li><strong>영상 실습</strong> — 이슈 서치 → 설계도 → 브라우저 → 렌더링</li>
+            <li><strong>ElevenLabs</strong> — 한국어 나레이션, Voice ID로 브랜드 보이스</li>
+            <li><strong>병합·제출</strong> — 영상+음성 → MP4 → 구글 드라이브</li>
+          </ul>
+          <div class="lead"><b>오늘의 의미</b> — 촬영·편집·성우 없이 <strong>‘코드로 쓰는 영상’</strong>. 마케터가 아이디어를 ‘완성된 영상 콘텐츠’로 직접 만드는 단계에 도달했다.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="마무리">
+        <div class="slide-inner">
+          <span class="kicker">10일의 여정 · GRADUATION</span>
+          <h2 class="heading">전 과정 회고 — 우리가 함께 만든 것</h2>
+          <p class="sub">생성 AI ‘사용자’에서 ‘제작자·자동화 설계자’로</p>
+          <div class="grid2" style="margin-top:6px">
+            <ul class="points" style="margin:0">
+              <li><strong>1일</strong> ChatGPT 문서·데이터 분석</li>
+              <li><strong>2일</strong> 엑셀·VBA·Custom GPT</li>
+              <li><strong>3일</strong> 이미지·영상·숏츠</li>
+              <li><strong>4일</strong> 데이터 분석·비개발자 Agent</li>
+              <li><strong>5일</strong> 리서치 AI 6종·자동화</li>
+            </ul>
+            <ul class="points" style="margin:0">
+              <li><strong>6일</strong> MCP·노코드 자동화</li>
+              <li><strong>7일</strong> Cowork·Skills·로컬 MCP</li>
+              <li><strong>8일</strong> 공공데이터 청약 대시보드</li>
+              <li><strong>9일</strong> 메일 트리아지 대시보드</li>
+              <li><strong>10일</strong> HyperFrames AI 영상 🎬</li>
+            </ul>
+          </div>
+          <div class="lead"><b>관통한 한 가지</b> — 도구는 매일 달랐지만 원리는 하나였습니다. <strong>“내가 직접 하지 않고, AI에게 잘 시켜서 자동화한다.”</strong> 이제 어떤 도구가 나와도 같은 방식으로 익힐 수 있습니다.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="마무리">
+        <div class="slide-inner">
+          <span class="kicker amber">CHEAT SHEET + 우승작</span>
+          <h2 class="heading">치트시트 & 포트폴리오</h2>
+          <div class="grid2">
+            <div class="code" style="margin-top:0"><span class="label">영상 제작 핵심 흐름</span>① 서치 → 대본 (5일차 리서치)
+② HyperFrames 설계도 (HTML/CSS)
+③ ElevenLabs 나레이션 (Voice ID)
+④ ffmpeg -i video.mp4 -i voice.mp3 final.mp4
+⑤ MP4 → 드라이브 제출</div>
+            <div class="box red" style="margin-top:0"><h3><span class="ico">🏆</span>포트폴리오 우승작</h3><p>김민선 교육생 — 10일 과정의 결실을 담은 우승 포트폴리오. <strong>여러분의 결과물도 포트폴리오가 됩니다.</strong></p></div>
+          </div>
+          <div class="lead green"><b>다음은?</b> — 오늘 만든 영상·대시보드·Agent·프롬프트를 <strong>실제 업무에 하나씩 적용</strong>하세요. 작은 자동화 하나가 쌓여 ‘AI 네이티브 마케터’가 됩니다.</div>
+        </div>
+      </section>
+
+      <section class="slide divider" data-sec="마무리">
+        <div class="slide-inner">
+          <span class="kicker">DAY 10 · 전 과정 수료</span>
+          <h1 class="title">10일간 수고 많으셨습니다 🎓</h1>
+          <p class="sub">생성형 AI 활용 마케팅 기획 · 업무생산성 향상 교육 · 전 과정 완료</p>
+          <div class="lead" style="margin-top:14px"><b>한국부동산마케팅협회</b> — 이 강의자료 전체(10일)도 오늘 배운 방식(Claude Code·GitHub)으로 만들어졌습니다. 여러분도 이제, 만들 수 있습니다. 🚀</div>
+          <div style="margin-top:18px"><a class="home" href="index.html" style="font-size:15px;color:var(--red)">← 전체 커리큘럼으로 돌아가기</a></div>
+        </div>
+      </section>
+
+    </div><!-- /stage -->
+
+    <div class="nav">
+      <a class="home" href="index.html">⌂ 커리큘럼</a>
+      <button class="navbtn" id="prev" aria-label="이전">‹</button>
+      <div class="progress"><div class="bar" id="bar"></div></div>
+      <button class="navbtn" id="next" aria-label="다음">›</button>
+      <div class="counter" id="counter">1 / 1</div>
+    </div>
+  </div>
+
+  <div class="hint" id="hint">← → 방향키로 이동 · F 전체화면</div>
+
+  <script>
+    const slides = Array.from(document.querySelectorAll('.slide'));
+    const bar = document.getElementById('bar');
+    const counter = document.getElementById('counter');
+    const secLabel = document.getElementById('secLabel');
+    const prevBtn = document.getElementById('prev');
+    const nextBtn = document.getElementById('next');
+    const hint = document.getElementById('hint');
+    let idx = 0;
+    function render() {
+      slides.forEach((s, i) => s.classList.toggle('active', i === idx));
+      const total = slides.length;
+      bar.style.width = ((idx + 1) / total * 100) + '%';
+      counter.textContent = (idx + 1) + ' / ' + total;
+      secLabel.textContent = slides[idx].dataset.sec || '';
+      prevBtn.disabled = idx === 0;
+      nextBtn.disabled = idx === total - 1;
+      slides[idx].scrollTop = 0;
+      if (location.hash !== '#' + (idx + 1)) history.replaceState(null, '', '#' + (idx + 1));
+    }
+    function go(n) { idx = Math.max(0, Math.min(slides.length - 1, n)); render(); }
+    prevBtn.addEventListener('click', () => go(idx - 1));
+    nextBtn.addEventListener('click', () => go(idx + 1));
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') { e.preventDefault(); go(idx + 1); }
+      else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); go(idx - 1); }
+      else if (e.key === 'Home') { go(0); }
+      else if (e.key === 'End') { go(slides.length - 1); }
+      else if (e.key === 'f' || e.key === 'F') { if (!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); }
+    });
+    const sectionStart = {};
+    slides.forEach((s, i) => { const sec = s.dataset.sec; if (sec && !(sec in sectionStart)) sectionStart[sec] = i; });
+    const tocData = [
+      ['1','HyperFrames 개요','코드로 쓰는 영상·HTML→MP4','PART 1','1. HyperFrames 개요'],
+      ['2','FFmpeg 설치','MP4 렌더링 엔진','PART 1','2. FFmpeg'],
+      ['3','HyperFrames 설치','Claude Code 직접 설치','PART 1','3. HyperFrames 설치'],
+      ['4','영상 실습','이슈 서치→영상 렌더링','PART 1','4. 영상 실습'],
+      ['5','ElevenLabs 한국어 보이스','음성 합성·Voice ID','PART 2','5. ElevenLabs'],
+      ['6','나레이션 병합','스크립트→음성→병합→제출','PART 2','6. 나레이션 병합'],
+    ];
+    const tocEl = document.getElementById('toc');
+    tocData.forEach(([n, t, d, pl, sec]) => {
+      const li = document.createElement('li');
+      li.innerHTML = `<span class="n">${n}</span><span><span class="pl">${pl}</span><br/><span class="t">${t}</span><br/><span class="d">${d}</span></span>`;
+      li.addEventListener('click', () => { if (sec in sectionStart) go(sectionStart[sec]); });
+      tocEl.appendChild(li);
+    });
+    const startHash = parseInt(location.hash.replace('#', ''), 10);
+    if (startHash && startHash >= 1 && startHash <= slides.length) idx = startHash - 1;
+    render();
+    setTimeout(() => { hint.style.transition = 'opacity 1s'; hint.style.opacity = '0'; }, 4000);
+  </script>
+</body>
+</html>
