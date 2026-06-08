@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>8일차 · 공공데이터 API × 청약 대시보드 제작·배포 | KREMA</title>
+  <style>
+    :root {
+      --bg: #0f172a; --bg-soft: #1e293b; --card: #1e293b; --card-2: #273449;
+      --text: #e2e8f0; --text-dim: #9aa7ba; --accent: #38bdf8; --accent-strong: #0ea5e9;
+      --highlight: #f59e0b; --green: #34d399; --pink: #f472b6; --purple: #a78bfa;
+      --teal: #2dd4bf; --rose: #fb7185; --orange: #f97316; --indigo: #818cf8;
+      --border: #334155; --code-bg: #0b1222;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      font-family: "Pretendard", "Malgun Gothic", -apple-system, BlinkMacSystemFont, sans-serif;
+      background: radial-gradient(1200px 700px at 50% -15%, #20235a 0%, var(--bg) 55%);
+      color: var(--text); line-height: 1.6; overflow: hidden;
+    }
+    .deck { height: 100vh; display: flex; flex-direction: column; }
+    .stage { flex: 1; position: relative; overflow: hidden; }
+    .slide { position: absolute; inset: 0; padding: 48px clamp(24px, 6vw, 90px) 32px; overflow-y: auto; display: none; flex-direction: column; gap: 14px; animation: fade 0.35s ease; }
+    .slide.active { display: flex; }
+    @keyframes fade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .slide-inner { max-width: 1020px; margin: 0 auto; width: 100%; }
+
+    /* ===== 폰트 확대 (가독성) ===== */
+    .kicker { display: inline-block; font-size: 13.5px; font-weight: 700; letter-spacing: 0.12em; color: var(--indigo); border: 1px solid var(--indigo); border-radius: 999px; padding: 5px 14px; margin-bottom: 15px; }
+    .kicker.amber { color: var(--highlight); border-color: var(--highlight); }
+    .kicker.green { color: var(--green); border-color: var(--green); }
+    .kicker.pink  { color: var(--pink);  border-color: var(--pink); }
+    .kicker.blue  { color: var(--accent); border-color: var(--accent); }
+
+    h1.title { font-size: clamp(30px, 5vw, 46px); font-weight: 800; letter-spacing: -0.02em; line-height: 1.2; margin-bottom: 13px; }
+    h2.heading { font-size: clamp(23px, 3.4vw, 32px); font-weight: 800; letter-spacing: -0.02em; line-height: 1.25; margin-bottom: 5px; }
+    h2.heading .num { color: var(--indigo); margin-right: 10px; font-variant-numeric: tabular-nums; }
+    .sub { color: var(--text-dim); font-size: clamp(15px, 1.7vw, 18px); margin-bottom: 7px; }
+
+    p { font-size: clamp(15px, 1.6vw, 17px); }
+    strong { color: #fff; }
+    .hl { color: var(--highlight); font-weight: 700; }
+    .ac { color: var(--accent); font-weight: 700; }
+    .gr { color: var(--green); font-weight: 700; }
+    .ig { color: var(--indigo); font-weight: 700; }
+
+    ul.points { list-style: none; display: flex; flex-direction: column; gap: 9px; margin-top: 5px; }
+    ul.points > li { position: relative; padding-left: 27px; font-size: clamp(15px, 1.6vw, 17px); }
+    ul.points > li::before { content: ""; position: absolute; left: 5px; top: 10px; width: 9px; height: 9px; border-radius: 50%; background: var(--indigo); }
+    ul.points ul { list-style: none; margin-top: 7px; padding-left: 4px; display: flex; flex-direction: column; gap: 6px; }
+    ul.points ul li { position: relative; padding-left: 19px; color: var(--text-dim); font-size: 15px; }
+    ul.points ul li::before { content: "–"; position: absolute; left: 2px; color: var(--text-dim); }
+
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; margin-top: 9px; }
+    .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 13px; margin-top: 9px; }
+    .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 11px; margin-top: 9px; }
+
+    .box { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 15px 17px; }
+    .box h3 { font-size: 15.5px; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+    .box .ico { font-size: 18px; }
+    .box p, .box li { font-size: 14.5px; color: var(--text-dim); }
+    .box ul { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+    .box ul li { position: relative; padding-left: 16px; }
+    .box ul li::before { content: "·"; position: absolute; left: 3px; color: var(--indigo); font-weight: 700; }
+    .box.accent { border-color: var(--accent); }
+    .box.amber  { border-color: var(--highlight); background: rgba(245,158,11,0.06); }
+    .box.green  { border-color: var(--green); }
+    .box.pink   { border-color: var(--pink); }
+    .box.purple { border-color: var(--purple); }
+    .box.indigo { border-color: var(--indigo); background: rgba(129,140,248,0.06); }
+
+    .lead { background: linear-gradient(180deg, rgba(129,140,248,0.10), rgba(129,140,248,0.02)); border: 1px solid var(--indigo); border-radius: 14px; padding: 13px 17px; font-size: clamp(15px, 1.6vw, 16.5px); margin: 5px 0; }
+    .lead b { color: var(--indigo); }
+    .lead.blue { background: linear-gradient(180deg, rgba(56,189,248,0.10), rgba(56,189,248,0.02)); border-color: var(--accent); }
+    .lead.blue b { color: var(--accent); }
+    .lead.green { background: linear-gradient(180deg, rgba(52,211,153,0.10), rgba(52,211,153,0.02)); border-color: var(--green); }
+    .lead.green b { color: var(--green); }
+    .lead.amber { background: linear-gradient(180deg, rgba(245,158,11,0.10), rgba(245,158,11,0.02)); border-color: var(--highlight); }
+    .lead.amber b { color: var(--highlight); }
+
+    .steps { counter-reset: step; display: flex; flex-direction: column; gap: 9px; margin-top: 5px; }
+    .steps li { list-style: none; position: relative; padding-left: 39px; font-size: 15px; min-height: 27px; display: flex; align-items: center; }
+    .steps li::before { counter-increment: step; content: counter(step); position: absolute; left: 0; top: 0; width: 27px; height: 27px; border-radius: 50%; background: var(--indigo); color: var(--bg); font-weight: 800; font-size: 13.5px; display: flex; align-items: center; justify-content: center; }
+    .steps.blue li::before { background: var(--accent); }
+    .steps.green li::before { background: var(--green); }
+    .steps.purple li::before { background: var(--purple); }
+
+    /* 프롬프트 (앰버) */
+    .prompt { background: var(--code-bg); border: 1px solid var(--border); border-left: 3px solid var(--highlight); border-radius: 10px; padding: 13px 15px; margin-top: 10px; font-family: "D2Coding", "Consolas", monospace; font-size: 14px; color: #cdd7e5; white-space: pre-wrap; line-height: 1.62; }
+    .prompt .label { display: block; font-family: "Pretendard", sans-serif; font-size: 12.5px; font-weight: 700; letter-spacing: 0.06em; color: var(--highlight); margin-bottom: 6px; }
+
+    /* 코드 (초록) */
+    .code { background: var(--code-bg); border: 1px solid var(--border); border-left: 3px solid var(--green); border-radius: 10px; padding: 13px 15px; margin-top: 10px; font-family: "D2Coding", "Consolas", monospace; font-size: 14px; color: #dbe3f0; white-space: pre; overflow-x: auto; line-height: 1.68; }
+    .code .label { display: block; font-family: "Pretendard", sans-serif; font-size: 12.5px; font-weight: 700; letter-spacing: 0.06em; color: var(--green); margin-bottom: 6px; }
+    .code .cmt { color: #6b7a90; }
+    .code .kw  { color: #38bdf8; }
+    .code .str { color: #fbbf24; }
+    .code .fn  { color: #f472b6; }
+    .code .num { color: #a78bfa; }
+
+    /* 워크플로 */
+    .flow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 11px; }
+    .flow .node { background: var(--card); border: 1px solid var(--border); border-radius: 9px; padding: 8px 14px; font-size: 14px; font-weight: 600; color: var(--text); }
+    .flow .node.on { border-color: var(--indigo); color: var(--indigo); }
+    .flow .arr { color: var(--text-dim); font-size: 16px; }
+
+    .tip { font-size: 14px; color: var(--text-dim); margin-top: 8px; }
+    .tip b { color: var(--green); }
+    .warn { color: var(--highlight); }
+
+    table.cmp { width: 100%; border-collapse: collapse; margin-top: 9px; font-size: 14.5px; }
+    table.cmp th, table.cmp td { border: 1px solid var(--border); padding: 9px 12px; text-align: left; vertical-align: top; }
+    table.cmp th { background: var(--card-2); color: #fff; font-weight: 700; }
+    table.cmp td { color: var(--text-dim); }
+    table.cmp tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
+    table.cmp code { font-family: "D2Coding", monospace; color: var(--indigo); font-size: 13.5px; }
+    table.cmp td:first-child { color: #fff; font-weight: 600; }
+
+    .f { font-family: "D2Coding", "Consolas", monospace; font-size: 0.93em; color: var(--indigo); background: rgba(129,140,248,0.08); border: 1px solid rgba(129,140,248,0.25); border-radius: 5px; padding: 1px 7px; }
+
+    .pill { display: inline-block; font-size: 13px; padding: 4px 12px; border-radius: 999px; border: 1px solid var(--border); color: var(--text-dim); margin: 2px 4px 2px 0; }
+    .pill.on { color: var(--bg); background: var(--indigo); border-color: var(--indigo); font-weight: 700; }
+
+    .divider { justify-content: center; align-items: flex-start; }
+    .divider .big-num { font-size: clamp(64px, 12vw, 134px); font-weight: 800; line-height: 1; color: transparent; -webkit-text-stroke: 2px var(--indigo); margin-bottom: 6px; }
+    .divider .part-tag { display: inline-block; font-size: 13px; font-weight: 700; letter-spacing: 0.09em; border-radius: 999px; padding: 4px 13px; margin-bottom: 13px; color: var(--indigo); border: 1px solid var(--indigo); }
+    .divider .part-tag.p2 { color: var(--green); border-color: var(--green); }
+    .divider .agenda { margin-top: 17px; display: flex; flex-wrap: wrap; gap: 8px; }
+
+    .toc { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 11px; margin-top: 11px; }
+    .toc li { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 13px 16px; display: flex; gap: 12px; align-items: flex-start; cursor: pointer; transition: border-color .15s ease, transform .15s ease, background .15s ease; }
+    .toc li:hover { border-color: var(--indigo); transform: translateY(-2px); background: var(--card-2); }
+    .toc .n { font-size: 20px; font-weight: 800; color: var(--indigo); min-width: 26px; }
+    .toc .t { font-size: 15.5px; font-weight: 700; }
+    .toc .d { font-size: 13px; color: var(--text-dim); margin-top: 2px; }
+    .toc .pl { font-size: 11.5px; color: var(--accent); font-weight: 700; letter-spacing: .04em; }
+
+    .topbar { display: flex; align-items: center; justify-content: space-between; padding: 12px clamp(18px, 5vw, 40px); border-bottom: 1px solid var(--border); background: rgba(15,23,42,0.7); backdrop-filter: blur(6px); flex-shrink: 0; }
+    .topbar .brand { font-size: 14.5px; font-weight: 700; color: var(--text); }
+    .topbar .brand span { color: var(--indigo); }
+    .topbar .sec-label { font-size: 14px; color: var(--text-dim); }
+
+    .nav { display: flex; align-items: center; gap: 14px; padding: 10px clamp(18px, 5vw, 40px); border-top: 1px solid var(--border); background: rgba(15,23,42,0.7); backdrop-filter: blur(6px); flex-shrink: 0; }
+    .progress { flex: 1; height: 6px; background: var(--bg-soft); border-radius: 999px; overflow: hidden; }
+    .progress .bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent), var(--indigo)); transition: width .3s ease; }
+    .counter { font-size: 14.5px; color: var(--text-dim); font-variant-numeric: tabular-nums; min-width: 66px; text-align: center; }
+    .navbtn { width: 40px; height: 40px; border-radius: 10px; border: 1px solid var(--border); background: var(--card); color: var(--text); font-size: 19px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .15s ease, border-color .15s ease, color .15s ease; }
+    .navbtn:hover { background: var(--indigo); color: var(--bg); border-color: var(--indigo); }
+    .navbtn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .navbtn:disabled:hover { background: var(--card); color: var(--text); border-color: var(--border); }
+    .home { font-size: 14px; color: var(--text-dim); text-decoration: none; }
+    .home:hover { color: var(--indigo); }
+    .hint { position: fixed; bottom: 70px; left: 50%; transform: translateX(-50%); font-size: 13.5px; color: var(--text-dim); opacity: .7; pointer-events: none; }
+
+    @media (max-width: 720px) {
+      .grid2, .grid3, .grid4, .toc { grid-template-columns: 1fr; }
+      .slide { padding: 28px 15px 24px; }
+      .hint { display: none; }
+      .code, .prompt { font-size: 12.8px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="deck">
+    <div class="topbar">
+      <div class="brand">KREMA · 생성형 AI 마케팅 기획 <span>8일차</span></div>
+      <div class="sec-label" id="secLabel">표지</div>
+    </div>
+
+    <div class="stage" id="stage">
+
+      <!-- ===== 표지 ===== -->
+      <section class="slide active" data-sec="표지">
+        <div class="slide-inner">
+          <span class="kicker">DAY 8 · 한국부동산마케팅협회</span>
+          <h1 class="title">공공데이터 API × Claude<br/>청약 대시보드 제작·배포</h1>
+          <p class="sub">2026년 5월 29일(금) 10:00–17:00 · 건설회관(서울 강남)</p>
+          <div class="lead" style="margin-top:16px">
+            <b>오늘의 목표</b> — 공공데이터포털의 <strong>청약 3종 API</strong>를 받아, Claude Code로 <strong>청약 대시보드</strong>를 만들고,
+            GitHub·Vercel로 <strong>인터넷에 배포</strong>합니다. 데이터 → 화면 → 공개 URL까지 ‘진짜 제품’을 완성.
+          </div>
+          <div class="lead blue" style="margin-top:10px"><b>메타 포인트</b> — <strong>지금 보고 있는 이 강의자료 사이트</strong>가 바로 오늘 배우는 방식(Claude Code + GitHub Pages)으로 만들어졌습니다. 결과물을 직접 체험 중!</div>
+          <div class="grid2" style="margin-top:14px">
+            <div class="box indigo"><h3><span class="ico">📊</span>PART 1 · API × 대시보드</h3><p>공공데이터·청약 3종 API·보안·Claude Code 제작</p></div>
+            <div class="box green"><h3><span class="ico">🚀</span>PART 2 · 배포·내부앱</h3><p>GitHub Pages·Vercel 자동배포·Google OAuth 접근제한</p></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== 목차 ===== -->
+      <section class="slide" data-sec="목차">
+        <div class="slide-inner">
+          <span class="kicker">CONTENTS</span>
+          <h2 class="heading">오늘 다루는 7개 섹션 (2 PART)</h2>
+          <p class="sub">제목을 누르면 해당 섹션으로 바로 이동합니다.</p>
+          <ul class="toc" id="toc"></ul>
+        </div>
+      </section>
+
+      <!-- ===== 섹션 01 divider ===== -->
+      <section class="slide divider" data-sec="1. 공공데이터포털">
+        <div class="slide-inner">
+          <span class="part-tag">PART 1 · API × 대시보드</span>
+          <div class="big-num">01</div>
+          <h2 class="heading">공공데이터포털(data.go.kr) 개념</h2>
+          <p class="sub">정부가 무료로 푸는 데이터 — 정의와 활용신청 흐름</p>
+          <div class="agenda">
+            <span class="pill on">공공데이터포털이란</span>
+            <span class="pill">공공 API의 강점</span>
+            <span class="pill">가입 → 발급 흐름</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="1. 공공데이터포털">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%">공공데이터포털이란?</h2>
+        <div class="slide-inner">
+          <p class="sub">정부·공공기관의 데이터를 누구나 쓸 수 있게 개방한 사이트</p>
+          <div class="grid2">
+            <div class="box indigo"><h3><span class="ico">🏛️</span>data.go.kr</h3><p>실거래가·청약·인구·교통 등 <strong>수만 종 데이터</strong>를 무료 개방. API와 파일로 제공</p></div>
+            <div class="box accent"><h3><span class="ico">🎯</span>부동산엔 보물창고</h3><ul><li>아파트 실거래가</li><li>청약 분양·경쟁률·당첨</li><li>인구·세대·건축 통계</li></ul></div>
+          </div>
+          <div class="lead"><b>왜 중요한가</b> — 신뢰할 수 있는 <strong>‘공식 1차 데이터’</strong>를 공짜로. 6일차에서 맛봤고, 오늘은 이걸로 <strong>실제 대시보드</strong>를 만든다.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="1. 공공데이터포털">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%">공공 API의 강점</h2>
+        <div class="slide-inner">
+          <p class="sub">파일 다운로드가 아닌 ‘API’로 받으면 무엇이 좋은가</p>
+          <div class="grid3">
+            <div class="box indigo"><h3><span class="ico">🔄</span>실시간·최신</h3><p>호출할 때마다 최신 데이터</p></div>
+            <div class="box indigo"><h3><span class="ico">🤖</span>자동화</h3><p>코드·시나리오로 정기 수집</p></div>
+            <div class="box indigo"><h3><span class="ico">🧩</span>가공 용이</h3><p>JSON/XML → 표·차트·대시보드</p></div>
+          </div>
+          <div class="lead green"><b>핵심</b> — 파일은 ‘한 번 받으면 끝’이지만 API는 <strong>‘살아있는 연결’</strong>. 대시보드가 항상 최신 데이터를 보여줄 수 있는 이유.</div>
+          <div class="tip"><b>비용</b> — 대부분 무료, 일일 호출 한도 존재. 상업 활용 가능(이용허락범위 확인).</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="1. 공공데이터포털">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%">가입 → 발급 흐름</h2>
+        <div class="slide-inner">
+          <p class="sub">데이터를 쓰기까지 전체 그림</p>
+          <div class="flow">
+            <span class="node on">회원가입</span><span class="arr">→</span>
+            <span class="node">데이터 검색</span><span class="arr">→</span>
+            <span class="node">활용 신청</span><span class="arr">→</span>
+            <span class="node on">인증키 발급</span><span class="arr">→</span>
+            <span class="node">API 호출</span>
+          </div>
+          <div class="steps" style="margin-top:14px">
+            <li><strong>data.go.kr 가입</strong> — 무료</li>
+            <li><strong>원하는 데이터 검색</strong> — “아파트 분양정보”, “청약 경쟁률” 등</li>
+            <li><strong>활용 신청</strong> — 보통 자동 승인(일부 심사)</li>
+            <li><strong>인증키 발급</strong> — 마이페이지에서 확인(섹션 2)</li>
+          </div>
+          <div class="lead"><b>섹션 1 정리</b> — 공공데이터포털 = 무료·공식·실시간 데이터의 원천. 다음 섹션에서 <strong>청약 3종 API 인증키</strong>를 직접 발급한다.</div>
+        </div>
+      </section>
+
+      <!-- ===== 섹션 02 divider ===== -->
+      <section class="slide divider" data-sec="2. 청약 3종 API">
+        <div class="slide-inner">
+          <span class="part-tag">PART 1 · API × 대시보드</span>
+          <div class="big-num">02</div>
+          <h2 class="heading">API 인증키 발급 + 청약 3종 API 구조</h2>
+          <p class="sub">인증키를 받고, 분양·경쟁률·당첨 3개 API를 연결하는 법</p>
+          <div class="agenda">
+            <span class="pill on">인증키 발급 4단계</span>
+            <span class="pill">인증키 형태</span>
+            <span class="pill">청약 3종 API</span>
+            <span class="pill">공통 연결 키</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="2. 청약 3종 API">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">2-1</span>인증키 발급 4단계 + 인증키 형태</h2>
+        <div class="slide-inner">
+          <p class="sub">API를 부르려면 ‘출입증(인증키)’이 필요하다</p>
+          <div class="steps">
+            <li><strong>데이터 검색</strong> — “아파트 분양정보” 등 검색</li>
+            <li><strong>활용 신청</strong> — 활용신청 버튼 ▸ 동의</li>
+            <li><strong>승인 확인</strong> — 보통 즉시(마이페이지)</li>
+            <li><strong>인증키 복사</strong> — 일반/Encoding 키 확인</li>
+          </div>
+          <div class="code"><span class="label">인증키 형태 (서비스키)</span><span class="cmt"># 일반 인증키 (Decoding)</span>
+aBcD1234eFgH5678...%2F...   <span class="cmt"># 길고 특수문자 포함</span>
+
+<span class="cmt"># Encoding 인증키 — URL에 그대로 붙일 때 사용</span>
+aBcD1234eFgH5678...%252F...</div>
+          <div class="tip warn"><b>주의</b> — 인증키는 <b>비밀번호</b>. 코드에 그대로 적거나 GitHub에 올리면 안 된다(섹션 3 .env). 인코딩/디코딩 키 구분 주의(에러 시 바꿔 시도).</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="2. 청약 3종 API">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">2-2</span>청약 3단계 × 3개 API</h2>
+        <div class="slide-inner">
+          <p class="sub">분양의 흐름(분양 → 경쟁 → 당첨)이 그대로 3개 API</p>
+          <table class="cmp">
+            <thead><tr><th>단계</th><th>API</th><th>데이터 ID</th><th>내용</th></tr></thead>
+            <tbody>
+              <tr><td>① 분양</td><td><strong>분양정보</strong></td><td><code>15098547</code></td><td>단지·일정·공급·분양가</td></tr>
+              <tr><td>② 경쟁</td><td><strong>경쟁률</strong></td><td><code>15098905</code></td><td>주택형별 청약 경쟁률</td></tr>
+              <tr><td>③ 당첨</td><td><strong>당첨자</strong></td><td><code>15110812</code></td><td>당첨 가점·커트라인</td></tr>
+            </tbody>
+          </table>
+          <div class="lead"><b>스토리</b> — “이 단지가(분양정보) 얼마나 인기였고(경쟁률) 누가 됐나(당첨자)”. 세 API를 합치면 <strong>청약 전 과정의 인사이트</strong>가 나온다.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="2. 청약 3종 API">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">2-3</span>공통 연결 키</h2>
+        <div class="slide-inner">
+          <p class="sub">세 API를 ‘하나의 단지’로 잇는 공통 식별자</p>
+          <div class="grid2">
+            <div class="box indigo"><h3><span class="ico">🔑</span>공통 키</h3><p>‘주택관리번호’ 같은 <strong>공통 식별자</strong>로 분양정보↔경쟁률↔당첨을 연결</p></div>
+            <div class="box accent"><h3><span class="ico">🧩</span>왜 필요</h3><p>같은 단지의 데이터를 <strong>합쳐서</strong> 보여주려면 ‘무엇이 같은 단지인지’ 기준이 필요</p></div>
+          </div>
+          <div class="code"><span class="label">연결 개념 (의사 코드)</span><span class="cmt"># 주택관리번호로 3개 API 데이터 합치기</span>
+분양 = 분양정보API(<span class="str">"주택관리번호"</span>)
+경쟁 = 경쟁률API(분양.<span class="str">"주택관리번호"</span>)
+당첨 = 당첨자API(분양.<span class="str">"주택관리번호"</span>)
+대시보드 = 합치기(분양, 경쟁, 당첨)</div>
+          <div class="lead green"><b>섹션 2 정리</b> — 인증키로 출입하고, 3종 API를 공통 키로 연결. 이제 ‘어떻게 호출하는지(REST)’와 ‘키를 안전하게 두는 법’을 배운다.</div>
+        </div>
+      </section>
+
+      <!-- ===== 섹션 03 divider ===== -->
+      <section class="slide divider" data-sec="3. REST·보안">
+        <div class="slide-inner">
+          <span class="part-tag">PART 1 · API × 대시보드</span>
+          <div class="big-num">03</div>
+          <h2 class="heading">REST API 호출 구조 + 인증키 보안(.env)</h2>
+          <p class="sub">API를 부르는 표준 방식과, 키를 안전하게 숨기는 법</p>
+          <div class="agenda">
+            <span class="pill on">REST API란</span>
+            <span class="pill">호출 구조</span>
+            <span class="pill">인증키 보안(.env)</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="3. REST·보안">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">3-1</span>REST API란 + 호출 구조</h2>
+        <div class="slide-inner">
+          <p class="sub">‘주소(URL)로 데이터를 요청’하는 표준 방식</p>
+          <div class="grid2">
+            <div class="box indigo"><h3><span class="ico">📡</span>REST의 기본</h3><ul><li><strong>URL</strong>로 요청 대상 지정</li><li><strong>GET</strong>(조회)이 대부분</li><li><strong>파라미터</strong>로 조건 전달</li><li>응답은 <strong>JSON/XML</strong></li></ul></div>
+            <div class="box accent"><h3><span class="ico">🧱</span>구성 요소</h3><ul><li>엔드포인트(주소)</li><li>serviceKey(인증)</li><li>쿼리(지역·기간 등)</li></ul></div>
+          </div>
+          <div class="code"><span class="label">청약 분양정보 API 호출 (구조)</span>GET https://api.odcloud.kr/api/<span class="num">15098547</span>/v1/uddi:...
+  ?serviceKey=<span class="str">발급키</span>
+  &amp;page=<span class="num">1</span>
+  &amp;perPage=<span class="num">100</span>
+  &amp;cond[지역명::EQ]=<span class="str">서울</span>
+
+<span class="cmt"># 응답(JSON): { "data": [ { 단지명, 공급규모, 청약일정 ... } ] }</span></div>
+          <div class="tip"><b>가이드 문서</b> — 각 API는 ‘활용가이드(명세서)’를 제공한다. 막히면 <b>명세서 PDF를 Claude에 붙여</b> “이 API 호출 코드 만들어줘”로 해결.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="3. REST·보안">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">3-2</span>인증키 보안 — .env</h2>
+        <div class="slide-inner">
+          <p class="sub">키를 코드에 직접 적지 않고 ‘비밀 파일’에 숨긴다</p>
+          <div class="code"><span class="label">.env (비밀 파일 — 절대 공개 금지)</span><span class="cmt"># 키는 여기에만</span>
+DATA_GO_KR_KEY=aBcD1234eFgH5678...
+
+<span class="cmt"># 코드에서는 이름으로 불러옴 (값은 안 보임)</span>
+const key = process.env.DATA_GO_KR_KEY;</span></div>
+          <div class="code"><span class="label">.gitignore (이 파일을 깃에서 제외)</span><span class="cmt"># .env를 커밋·업로드에서 빼기</span>
+.env
+.env.local</div>
+          <div class="lead amber"><b>철칙</b> — 인증키를 코드에 직접 쓰면 GitHub에 ‘그대로 노출’된다. <strong>.env에 넣고 .gitignore로 제외</strong>. 유출 시 즉시 재발급.</div>
+          <div class="tip"><b>실제 적용</b> — 이 강의 사이트도 민감정보는 커밋 제외(.gitignore) 원칙을 지켰다. 보안은 ‘습관’.</div>
+        </div>
+      </section>
+
+      <!-- ===== 섹션 04 divider ===== -->
+      <section class="slide divider" data-sec="4. 대시보드 제작">
+        <div class="slide-inner">
+          <span class="part-tag">PART 1 · API × 대시보드</span>
+          <div class="big-num">04</div>
+          <h2 class="heading">Claude Code 청약 대시보드 제작</h2>
+          <p class="sub">Code·Design을 병행해 ‘보이는 대시보드’를 만든다</p>
+          <div class="agenda">
+            <span class="pill on">Code·Design 병행</span>
+            <span class="pill">프롬프트 원칙</span>
+            <span class="pill">모드·요소 개선</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="4. 대시보드 제작">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">4-1</span>Code · Design 병행</h2>
+        <div class="slide-inner">
+          <p class="sub">‘기능(Code)’과 ‘디자인(Design)’을 함께 굴린다</p>
+          <div class="grid2">
+            <div class="box indigo"><h3><span class="ico">⌨️</span>Claude Code</h3><p>API 연동·데이터 처리·기능 구현. Next.js 등으로 작동하는 앱</p></div>
+            <div class="box accent"><h3><span class="ico">🎨</span>Claude Design</h3><p>레이아웃·색·컴포넌트 — 보기 좋고 쓰기 좋은 UI</p></div>
+          </div>
+          <div class="flow">
+            <span class="node on">API 연동(Code)</span><span class="arr">→</span>
+            <span class="node">데이터 표·차트</span><span class="arr">→</span>
+            <span class="node on">디자인 다듬기(Design)</span><span class="arr">→</span>
+            <span class="node">완성</span>
+          </div>
+          <div class="lead"><b>접근</b> — 한 번에 완벽 X. ‘작동하는 뼈대(Code)’를 먼저 만들고, ‘보기 좋게(Design)’ 다듬는다. 이 강의 대시보드(index.html)도 그렇게 만들어졌다.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="4. 대시보드 제작">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">4-2</span>프롬프트 원칙</h2>
+        <div class="slide-inner">
+          <p class="sub">Claude Code에 ‘잘 시키는’ 법</p>
+          <ul class="points">
+            <li><strong>목표·데이터를 명확히</strong> — “청약 3종 API로 단지별 경쟁률 대시보드”</li>
+            <li><strong>한 번에 하나씩</strong> — 기능 단위로 쪼개 요청·확인</li>
+            <li><strong>에러는 그대로</strong> — 오류 메시지를 복사해 되묻기</li>
+            <li><strong>예시·레퍼런스 제공</strong> — 원하는 화면 스케치·참고 사이트</li>
+          </ul>
+          <div class="prompt"><span class="label">대시보드 제작 프롬프트</span>공공데이터 청약 API(분양정보·경쟁률·당첨) 3종을 연동한
+청약 대시보드를 Next.js로 만들어줘.
+- 단지 목록 + 검색/필터(지역·기간)
+- 단지 클릭 시 경쟁률·당첨 가점 차트
+- .env로 API 키 관리, 반응형, 다크 테마</div>
+          <div class="tip"><b>핵심</b> — 1·2일차의 ‘역할·맥락·형식’ 원리가 코딩에도 그대로. ‘무엇을·어떤 데이터로·어떤 모양’을 주면 된다.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="4. 대시보드 제작">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">4-3</span>모드·요소 개선</h2>
+        <div class="slide-inner">
+          <p class="sub">초안을 대화로 다듬어 ‘쓸 만한 제품’으로</p>
+          <div class="grid3">
+            <div class="box indigo"><h3><span class="ico">🌗</span>모드</h3><p>다크/라이트·모바일 대응</p></div>
+            <div class="box indigo"><h3><span class="ico">📊</span>요소</h3><p>차트 종류·정렬·필터 추가</p></div>
+            <div class="box indigo"><h3><span class="ico">⚡</span>성능·UX</h3><p>로딩·빈 상태·에러 처리</p></div>
+          </div>
+          <div class="prompt"><span class="label">개선 요청 예</span>→ "경쟁률을 막대그래프로, 높은 순 정렬"
+→ "모바일에서 카드가 한 줄로 보이게"
+→ "데이터 로딩 중 스켈레톤 표시"
+→ "지역 필터를 상단 고정 바로"</div>
+          <div class="lead green"><b>섹션 4 정리</b> — Code로 만들고 Design으로 다듬고, 대화로 개선. <strong>비개발자도 ‘작동하는 청약 대시보드’</strong>를 완성. 이제 세상에 공개(PART 2)한다.</div>
+        </div>
+      </section>
+
+      <!-- ===== 섹션 05 divider ===== -->
+      <section class="slide divider" data-sec="5. GitHub 배포">
+        <div class="slide-inner">
+          <span class="part-tag p2">PART 2 · 배포·내부앱</span>
+          <div class="big-num">05</div>
+          <h2 class="heading">GitHub 개념 + GitHub Pages·CLI 배포</h2>
+          <p class="sub">코드를 저장·공유하고, 무료로 인터넷에 올리기</p>
+          <div class="agenda">
+            <span class="pill on">Git·GitHub 개념</span>
+            <span class="pill">GitHub Pages 배포</span>
+            <span class="pill">GitHub CLI(gh)</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="5. GitHub 배포">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">5-1</span>Git · GitHub 개념</h2>
+        <div class="slide-inner">
+          <p class="sub">‘버전 저장’과 ‘클라우드 공유’</p>
+          <div class="grid2">
+            <div class="box indigo"><h3><span class="ico">💾</span>Git</h3><p>코드의 <strong>버전을 저장</strong>하는 도구. ‘언제·무엇을 바꿨는지’ 기록(커밋)</p></div>
+            <div class="box accent"><h3><span class="ico">☁️</span>GitHub</h3><p>Git 저장소를 <strong>클라우드에 보관·공유</strong>. 협업·배포의 중심</p></div>
+          </div>
+          <div class="lead blue"><b>비유</b> — Git = ‘구글 문서의 버전 기록’, GitHub = ‘그 문서를 올려두는 구글 드라이브’. <strong>commit(저장) → push(업로드)</strong>가 기본 흐름.</div>
+          <div class="code"><span class="label">기본 흐름 (이 사이트도 이렇게)</span><span class="kw">git</span> add .                  <span class="cmt"># 변경 담기</span>
+<span class="kw">git</span> commit -m <span class="str">"메시지"</span>     <span class="cmt"># 저장(스냅샷)</span>
+<span class="kw">git</span> push                    <span class="cmt"># GitHub에 업로드</span></div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="5. GitHub 배포">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">5-2</span>GitHub Pages 배포</h2>
+        <div class="slide-inner">
+          <p class="sub">정적 사이트(HTML)를 ‘무료로’ 인터넷에 — 이 강의자료 사이트가 그 예</p>
+          <div class="steps">
+            <li>GitHub에 저장소(repo) 생성·push</li>
+            <li>Settings ▸ <strong>Pages</strong> ▸ 브랜치(main)·폴더(/) 지정</li>
+            <li>잠시 후 <span class="f">https://계정.github.io/저장소/</span> 발급</li>
+            <li>이후 push만 하면 자동 반영</li>
+          </div>
+          <div class="lead"><b>실제 사례</b> — 지금 이 자료가 바로 <strong><span class="f">mongkoe.github.io/krema-ai-curriculum</span></strong>. HTML을 push → GitHub Pages가 공개. 서버 비용 0.</div>
+          <div class="tip"><b>적합</b> — HTML/CSS/JS 정적 사이트(대시보드·포트폴리오·강의자료). Next.js 같은 동적 앱은 Vercel(섹션 6)이 편하다.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="5. GitHub 배포">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">5-3</span>GitHub CLI (gh)</h2>
+        <div class="slide-inner">
+          <p class="sub">터미널에서 GitHub를 다루는 명령 도구</p>
+          <div class="code"><span class="label">gh CLI 주요 명령</span><span class="kw">gh</span> auth login              <span class="cmt"># GitHub 로그인</span>
+<span class="kw">gh</span> repo create my-app       <span class="cmt"># 저장소 생성</span>
+<span class="kw">gh</span> repo view --web          <span class="cmt"># 브라우저로 열기</span>
+<span class="kw">gh</span> pr create                <span class="cmt"># PR(검토 요청) 생성</span></div>
+          <div class="grid2">
+            <div class="box indigo"><h3><span class="ico">⚡</span>장점</h3><p>웹 클릭 없이 터미널에서 빠르게. 자동화·스크립트에 유리</p></div>
+            <div class="box green"><h3><span class="ico">🤝</span>Claude Code와</h3><p>Claude Code가 gh 명령으로 저장소 생성·push·배포까지 대신</p></div>
+          </div>
+          <div class="lead green"><b>섹션 5 정리</b> — Git(저장)·GitHub(공유)·Pages(무료 배포)·gh(터미널). <strong>정적 사이트는 push 한 번으로 세상에 공개</strong>된다.</div>
+        </div>
+      </section>
+
+      <!-- ===== 섹션 06 divider ===== -->
+      <section class="slide divider" data-sec="6. Vercel 배포">
+        <div class="slide-inner">
+          <span class="part-tag p2">PART 2 · 배포·내부앱</span>
+          <div class="big-num">06</div>
+          <h2 class="heading">GitHub → Vercel 자동 배포 파이프라인</h2>
+          <p class="sub">push만 하면 자동으로 빌드·배포되는 ‘진짜 앱’ 운영</p>
+          <div class="agenda">
+            <span class="pill on">배포 흐름</span>
+            <span class="pill">Vercel 연동</span>
+            <span class="pill">비용</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="6. Vercel 배포">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">6-1</span>배포 흐름 + Vercel 연동</h2>
+        <div class="slide-inner">
+          <p class="sub">‘GitHub에 올리면 → Vercel이 알아서 배포’</p>
+          <div class="flow">
+            <span class="node on">코드 수정</span><span class="arr">→</span>
+            <span class="node">git push</span><span class="arr">→</span>
+            <span class="node">Vercel 자동 빌드</span><span class="arr">→</span>
+            <span class="node on">라이브 반영</span>
+          </div>
+          <div class="steps" style="margin-top:14px">
+            <li><span class="f">vercel.com</span> ▸ GitHub 계정으로 로그인</li>
+            <li><strong>Import</strong> ▸ 내 저장소 선택</li>
+            <li>프레임워크(Next.js) 자동 감지 ▸ <strong>환경변수(.env)</strong> 입력</li>
+            <li>Deploy ▸ 공개 URL 발급. 이후 <strong>push마다 자동 재배포</strong></li>
+          </div>
+          <div class="lead"><b>핵심 차이</b> — GitHub Pages는 ‘정적 사이트’, Vercel은 <strong>Next.js 같은 동적 앱(API·서버 기능)</strong>에 강하다. 청약 대시보드(API 연동)는 Vercel이 제격.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="6. Vercel 배포">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">6-2</span>비용 + Pages vs Vercel</h2>
+        <div class="slide-inner">
+          <p class="sub">언제 무엇을, 그리고 얼마</p>
+          <table class="cmp">
+            <thead><tr><th>구분</th><th>GitHub Pages</th><th>Vercel</th></tr></thead>
+            <tbody>
+              <tr><td>적합</td><td>정적(HTML)</td><td>동적(Next.js·API)</td></tr>
+              <tr><td>자동 배포</td><td>push 시 반영</td><td>push 시 자동 빌드</td></tr>
+              <tr><td>환경변수(.env)</td><td>제한적</td><td><strong>지원(키 보관)</strong></td></tr>
+              <tr><td>비용</td><td>무료</td><td>무료(취미)~유료(상업·트래픽)</td></tr>
+            </tbody>
+          </table>
+          <div class="tip"><b>비용 주의</b> — Vercel은 개인·소규모는 무료, 상업적·고트래픽은 유료 플랜. 시작은 무료로, 규모가 커지면 검토.</div>
+          <div class="lead green"><b>섹션 6 정리</b> — 정적=Pages, 동적=Vercel. 둘 다 <strong>‘push → 자동 배포’</strong>. 코드를 고치면 세상에 즉시 반영되는 운영 체계 완성.</div>
+        </div>
+      </section>
+
+      <!-- ===== 섹션 07 divider ===== -->
+      <section class="slide divider" data-sec="7. OAuth 내부앱">
+        <div class="slide-inner">
+          <span class="part-tag p2">PART 2 · 배포·내부앱</span>
+          <div class="big-num">07</div>
+          <h2 class="heading">팀원만 접근 가능한 내부앱 — Google OAuth</h2>
+          <p class="sub">‘아무나’가 아니라 ‘우리 팀만’ 보게 하는 3가지 방법</p>
+          <div class="agenda">
+            <span class="pill on">왜 접근 제한</span>
+            <span class="pill">방법 A 워크스페이스</span>
+            <span class="pill">방법 B Gmail 계정</span>
+            <span class="pill">방법 C 코드 레벨</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="7. OAuth 내부앱">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">7-1</span>왜 접근 제한 + OAuth란</h2>
+        <div class="slide-inner">
+          <p class="sub">내부 데이터(고객·실적)는 ‘공개’되면 안 된다</p>
+          <div class="grid2">
+            <div class="box amber"><h3><span class="ico">🔓</span>공개 URL의 문제</h3><p>링크만 알면 누구나 접속. 고객 정보·내부 실적 대시보드엔 위험</p></div>
+            <div class="box indigo"><h3><span class="ico">🔐</span>Google OAuth</h3><p>‘구글 로그인’으로 <strong>허용된 사람만</strong> 입장. 비밀번호 관리 불필요</p></div>
+          </div>
+          <div class="lead"><b>OAuth 한 줄</b> — “구글 계정으로 로그인하세요” → 우리가 정한 명단/조직만 통과. <strong>안전하게 ‘내부앱’</strong>으로 운영.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="7. OAuth 내부앱">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">7-2</span>접근 제한 3가지 방법</h2>
+        <div class="slide-inner">
+          <p class="sub">상황에 맞게 — 조직 / 명단 / 코드</p>
+          <table class="cmp">
+            <thead><tr><th>방법</th><th>기준</th><th>이럴 때</th></tr></thead>
+            <tbody>
+              <tr><td><strong>A 워크스페이스 조직</strong></td><td>회사 구글 도메인</td><td>@회사.com 전 직원 허용</td></tr>
+              <tr><td><strong>B Gmail 개인 계정</strong></td><td>허용 이메일 명단</td><td>특정 몇 명만(외부 협력 포함)</td></tr>
+              <tr><td><strong>C 코드 레벨 제한</strong></td><td>앱 코드에서 검사</td><td>세밀한 권한·역할 분기</td></tr>
+            </tbody>
+          </table>
+          <div class="lead"><b>선택 가이드</b> — 회사 도메인 있으면 <strong>A</strong>(가장 간단), 소수 지정은 <strong>B</strong>, 복잡한 권한은 <strong>C</strong>. 보통 A 또는 B로 충분.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="7. OAuth 내부앱">
+        <h2 class="heading" style="max-width:1020px;margin:0 auto;width:100%"><span class="num">7-3</span>구현 개념 + 적용</h2>
+        <div class="slide-inner">
+          <p class="sub">코드는 Claude Code에 맡기고, ‘무엇을 허용할지’만 정한다</p>
+          <div class="code"><span class="label">방법 B 개념 (허용 이메일 검사)</span><span class="cmt">// 로그인한 사용자가 허용 명단에 있는지 확인</span>
+<span class="kw">const</span> allowed = [<span class="str">"a@company.com"</span>, <span class="str">"b@company.com"</span>];
+<span class="kw">if</span> (!allowed.includes(user.email)) {
+  <span class="kw">return</span> <span class="str">"접근 권한이 없습니다"</span>;
+}</div>
+          <div class="prompt"><span class="label">Claude Code 프롬프트</span>이 대시보드에 Google 로그인(OAuth)을 붙이고,
+허용된 이메일(@회사.com 도메인 또는 지정 명단)만
+접근하게 만들어줘. 권한 없으면 안내 페이지로.</div>
+          <div class="lead green"><b>섹션 7 정리</b> — 공개앱이 아니라 ‘내부앱’으로. <strong>Google OAuth로 우리 팀만</strong> 안전하게. 이로써 데이터→대시보드→배포→보안까지 ‘제품 운영’의 한 사이클 완성.</div>
+        </div>
+      </section>
+
+      <!-- ===== 마무리 ===== -->
+      <section class="slide" data-sec="마무리">
+        <div class="slide-inner">
+          <span class="kicker green">WRAP-UP</span>
+          <h2 class="heading">오늘 핵심 7가지</h2>
+          <ul class="points">
+            <li><strong>공공데이터포털</strong> — 무료·공식·실시간 데이터의 원천</li>
+            <li><strong>청약 3종 API</strong> — 분양·경쟁률·당첨을 공통 키로 연결</li>
+            <li><strong>REST·보안</strong> — URL로 호출, 인증키는 .env로 숨기기</li>
+            <li><strong>Claude Code 대시보드</strong> — Code·Design 병행, 대화로 개선</li>
+            <li><strong>GitHub 배포</strong> — commit·push, Pages로 무료 공개</li>
+            <li><strong>Vercel 자동배포</strong> — push → 자동 빌드, 동적 앱에 강함</li>
+            <li><strong>Google OAuth</strong> — 팀만 접근하는 안전한 내부앱</li>
+          </ul>
+          <div class="lead"><b>관통하는 원리</b> — <strong>“데이터(API) → 화면(Code·Design) → 공개(GitHub·Vercel) → 보안(OAuth)”</strong>. 비개발자가 ‘아이디어를 진짜 작동하는 서비스’로 만드는 전 과정. 그 증거가 이 강의 사이트다.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-sec="마무리">
+        <div class="slide-inner">
+          <span class="kicker amber">CHEAT SHEET</span>
+          <h2 class="heading">바로 쓰는 치트시트</h2>
+          <div class="grid2">
+            <div class="code" style="margin-top:0"><span class="label">배포 3종 명령</span>git add .
+git commit -m "메시지"
+git push           <span class="cmt"># → Pages/Vercel 자동 반영</span></div>
+            <div class="code" style="margin-top:0"><span class="label">키 보안</span>.env        → 인증키는 여기에
+.gitignore  → .env 를 깃에서 제외
+(유출 시 즉시 재발급)</div>
+          </div>
+          <div class="grid2">
+            <div class="box indigo"><h3><span class="ico">🚀</span>배포 선택</h3><p>정적(HTML)=GitHub Pages · 동적(Next.js·API)=Vercel</p></div>
+            <div class="box amber"><h3><span class="ico">🔐</span>접근 제한</h3><p>회사도메인=A · 지정명단=B · 세밀권한=C (Google OAuth)</p></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide divider" data-sec="마무리">
+        <div class="slide-inner">
+          <span class="kicker">DAY 8 · 끝</span>
+          <h1 class="title">수고하셨습니다 👏</h1>
+          <p class="sub">오늘 만든 청약 대시보드를 GitHub·Vercel로 배포하고, 우리 팀에게 URL을 공유해 보세요.</p>
+          <div class="lead blue" style="margin-top:14px"><b>방금 경험한 것</b> — 이 강의자료 사이트가 바로 ‘Claude Code + GitHub Pages’의 결과물. 오늘 배운 그대로입니다.</div>
+          <div class="lead" style="margin-top:10px"><b>다음 시간(9일차)</b> — 메일 트리아지 대시보드 제작·배포로 이어집니다.</div>
+          <div style="margin-top:16px"><a class="home" href="index.html" style="font-size:15px;color:var(--indigo)">← 전체 커리큘럼으로 돌아가기</a></div>
+        </div>
+      </section>
+
+    </div><!-- /stage -->
+
+    <div class="nav">
+      <a class="home" href="index.html">⌂ 커리큘럼</a>
+      <button class="navbtn" id="prev" aria-label="이전">‹</button>
+      <div class="progress"><div class="bar" id="bar"></div></div>
+      <button class="navbtn" id="next" aria-label="다음">›</button>
+      <div class="counter" id="counter">1 / 1</div>
+    </div>
+  </div>
+
+  <div class="hint" id="hint">← → 방향키로 이동 · F 전체화면</div>
+
+  <script>
+    const slides = Array.from(document.querySelectorAll('.slide'));
+    const bar = document.getElementById('bar');
+    const counter = document.getElementById('counter');
+    const secLabel = document.getElementById('secLabel');
+    const prevBtn = document.getElementById('prev');
+    const nextBtn = document.getElementById('next');
+    const hint = document.getElementById('hint');
+    let idx = 0;
+    function render() {
+      slides.forEach((s, i) => s.classList.toggle('active', i === idx));
+      const total = slides.length;
+      bar.style.width = ((idx + 1) / total * 100) + '%';
+      counter.textContent = (idx + 1) + ' / ' + total;
+      secLabel.textContent = slides[idx].dataset.sec || '';
+      prevBtn.disabled = idx === 0;
+      nextBtn.disabled = idx === total - 1;
+      slides[idx].scrollTop = 0;
+      if (location.hash !== '#' + (idx + 1)) history.replaceState(null, '', '#' + (idx + 1));
+    }
+    function go(n) { idx = Math.max(0, Math.min(slides.length - 1, n)); render(); }
+    prevBtn.addEventListener('click', () => go(idx - 1));
+    nextBtn.addEventListener('click', () => go(idx + 1));
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') { e.preventDefault(); go(idx + 1); }
+      else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); go(idx - 1); }
+      else if (e.key === 'Home') { go(0); }
+      else if (e.key === 'End') { go(slides.length - 1); }
+      else if (e.key === 'f' || e.key === 'F') { if (!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); }
+    });
+    const sectionStart = {};
+    slides.forEach((s, i) => { const sec = s.dataset.sec; if (sec && !(sec in sectionStart)) sectionStart[sec] = i; });
+    const tocData = [
+      ['1','공공데이터포털 개념','정의·강점·가입→발급 흐름','PART 1','1. 공공데이터포털'],
+      ['2','인증키 발급 + 청약 3종 API','발급 4단계·분양/경쟁률/당첨 API','PART 1','2. 청약 3종 API'],
+      ['3','REST API 호출 + 보안(.env)','REST 구조·인증키 보안','PART 1','3. REST·보안'],
+      ['4','Claude Code 대시보드 제작','Code·Design 병행·프롬프트 원칙','PART 1','4. 대시보드 제작'],
+      ['5','GitHub + Pages·CLI 배포','Git·GitHub·무료 배포','PART 2','5. GitHub 배포'],
+      ['6','GitHub → Vercel 자동 배포','배포 파이프라인·비용','PART 2','6. Vercel 배포'],
+      ['7','팀 내부앱 — Google OAuth','접근 제한 3가지 방법','PART 2','7. OAuth 내부앱'],
+    ];
+    const tocEl = document.getElementById('toc');
+    tocData.forEach(([n, t, d, pl, sec]) => {
+      const li = document.createElement('li');
+      li.innerHTML = `<span class="n">${n}</span><span><span class="pl">${pl}</span><br/><span class="t">${t}</span><br/><span class="d">${d}</span></span>`;
+      li.addEventListener('click', () => { if (sec in sectionStart) go(sectionStart[sec]); });
+      tocEl.appendChild(li);
+    });
+    const startHash = parseInt(location.hash.replace('#', ''), 10);
+    if (startHash && startHash >= 1 && startHash <= slides.length) idx = startHash - 1;
+    render();
+    setTimeout(() => { hint.style.transition = 'opacity 1s'; hint.style.opacity = '0'; }, 4000);
+  </script>
+</body>
+</html>
